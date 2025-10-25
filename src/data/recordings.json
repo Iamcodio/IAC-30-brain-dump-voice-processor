@@ -1,0 +1,97 @@
+{
+  "recordings": [
+    {
+      "id": "rec_1761358665000",
+      "timestamp": "2025-10-25T02:17:45.000Z",
+      "duration": 21,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_03-17-45.wav",
+      "transcriptTxt": null,
+      "transcriptMd": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/transcripts/transcript_2025-10-25_031746.md",
+      "firstLine": "Oh, I'm in love with a man called Claude. He's not just a man, but he's a robot man. A robot man who...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en",
+        "migrated": true
+      }
+    },
+    {
+      "id": "rec_1761340849000",
+      "timestamp": "2025-10-24T21:20:49.000Z",
+      "duration": 5,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/test_recording_20251024_222049.wav",
+      "transcriptTxt": null,
+      "transcriptMd": null,
+      "firstLine": "[No transcript] test_recording_20251024_222049.wav",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en",
+        "migrated": true
+      }
+    },
+    {
+      "id": "rec_1761377286300",
+      "timestamp": "2025-10-25T07:28:06.300Z",
+      "duration": 5,
+      "audioFile": "outputs/audio/test_recording_20251024_222049.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_082805.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_082805.md",
+      "firstLine": "Hello hello hello hello hello hello hello hello hello hello",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761377300704",
+      "timestamp": "2025-10-25T07:28:20.704Z",
+      "duration": 10,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_08-28-20.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_082820.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_082820.md",
+      "firstLine": "Hi, Clody Cody, baby. How you doing, Clody Cody? Are you doing okay, Clody Cody? You're doing a good...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761377412820",
+      "timestamp": "2025-10-25T07:30:12.820Z",
+      "duration": 5,
+      "audioFile": "outputs/audio/test_recording_20251024_222049.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_083012.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_083012.md",
+      "firstLine": "Hello hello hello hello hello hello hello hello hello hello",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761378652629",
+      "timestamp": "2025-10-25T07:50:52.629Z",
+      "duration": 31,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_08-50-51.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_085051.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_085051.md",
+      "firstLine": "Hey, you're just checking in, seeing how we're doing on the project. The brain dumps voice processor...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761378665447",
+      "timestamp": "2025-10-25T07:51:05.447Z",
+      "duration": 11,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_08-51-04.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_085104.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_085104.md",
+      "firstLine": "Right, okay. I'm just going to go through and check everything. Brain dump voice processor is record...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    }
+  ]
+}

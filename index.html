@@ -28,24 +28,59 @@
     .ready {
       color: #4caf50;
     }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .btn {
+      background: #3a3a3a;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      background: #4a4a4a;
+    }
+    .btn:active {
+      transform: translateY(1px);
+    }
   </style>
 </head>
 <body>
-  <h1>BrainDump Voice Processor</h1>
+  <div class="header">
+    <h1>BrainDump Voice Processor</h1>
+    <button class="btn" id="historyBtn">View History</button>
+  </div>
   <div id="status" class="ready">Ready - Press Ctrl+Y to start</div>
   <canvas id="waveform"></canvas>
   
   <script>
     const { ipcRenderer } = require('electron');
-    
+
     ipcRenderer.on('recording-started', () => {
       document.getElementById('status').textContent = 'Recording...';
       document.getElementById('status').className = 'recording';
     });
-    
+
     ipcRenderer.on('recording-stopped', () => {
       document.getElementById('status').textContent = 'Ready - Press Ctrl+Y to start';
       document.getElementById('status').className = 'ready';
+    });
+
+    // Navigation to history view
+    document.getElementById('historyBtn').addEventListener('click', () => {
+      ipcRenderer.send('show-history');
     });
   </script>
 </body>

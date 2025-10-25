@@ -1,10 +1,13 @@
-const { app, BrowserWindow, globalShortcut } = require('electron');
+const { app, BrowserWindow, globalShortcut, ipcMain, shell } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
+const fs = require('fs');
+const Database = require('./database.js');
 
 let mainWindow;
 let recorderProcess;
 let isRecording = false;
+let db;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -72,8 +75,11 @@ function transcribeAudio(audioPath) {
 }
 
 app.whenReady().then(() => {
+  // Initialize database
+  db = new Database(__dirname);
+
   createWindow();
-  
+
   const ret = globalShortcut.register('Control+Y', () => {
     console.log('Hotkey pressed: Control+Y');
     if (isRecording) {
@@ -82,7 +88,7 @@ app.whenReady().then(() => {
       startRecording();
     }
   });
-  
+
   if (!ret) {
     console.log('Shortcut registration failed');
   }
@@ -107,3 +113,81 @@ function stopRecording() {
   console.log('Sending stop command to Python');
   recorderProcess.stdin.write('stop\n');
 }
+
+// IPC Handlers for History View
+
+/**
+ * Get all recordings from database
+ */
+ipcMain.handle('get-recordings', async () => {
+  try {
+    return db.getAll();
+  } catch (error) {
+    console.error('Error getting recordings:', error);
+    return [];
+  }
+});
+
+/**
+ * Search recordings
+ */
+ipcMain.handle('search-recordings', async (event, query) => {
+  try {
+    return db.search(query);
+  } catch (error) {
+    console.error('Error searching recordings:', error);
+    return [];
+  }
+});
+
+/**
+ * Read file contents (for copying transcripts)
+ */
+ipcMain.handle('read-file', async (event, filePath) => {
+  try {
+    return fs.readFileSync(filePath, 'utf-8');
+  } catch (error) {
+    console.error('Error reading file:', error);
+    throw error;
+  }
+});
+
+/**
+ * Play audio file in default player
+ */
+ipcMain.on('play-audio', (event, audioPath) => {
+  try {
+    if (process.platform === 'darwin') {
+      spawn('open', ['-a', 'QuickTime Player', audioPath]);
+    } else {
+      shell.openPath(audioPath);
+    }
+  } catch (error) {
+    console.error('Error playing audio:', error);
+  }
+});
+
+/**
+ * View file in default application
+ */
+ipcMain.on('view-file', (event, filePath) => {
+  try {
+    shell.openPath(filePath);
+  } catch (error) {
+    console.error('Error viewing file:', error);
+  }
+});
+
+/**
+ * Switch to history view
+ */
+ipcMain.on('show-history', () => {
+  mainWindow.loadFile('history.html');
+});
+
+/**
+ * Switch to recorder view
+ */
+ipcMain.on('show-recorder', () => {
+  mainWindow.loadFile('index.html');
+});
