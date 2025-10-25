@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BrainDump Voice Processor</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1a1a1a;
+      color: #ffffff;
+    }
+    #waveform {
+      width: 100%;
+      height: 200px;
+      background: #2a2a2a;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    #status {
+      font-size: 24px;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .recording {
+      color: #ff3b3b;
+    }
+    .ready {
+      color: #4caf50;
+    }
+  </style>
+</head>
+<body>
+  <h1>BrainDump Voice Processor</h1>
+  <div id="status" class="ready">Ready - Press Ctrl+Y to start</div>
+  <canvas id="waveform"></canvas>
+  
+  <script>
+    const { ipcRenderer } = require('electron');
+    
+    ipcRenderer.on('recording-started', () => {
+      document.getElementById('status').textContent = 'Recording...';
+      document.getElementById('status').className = 'recording';
+    });
+    
+    ipcRenderer.on('recording-stopped', () => {
+      document.getElementById('status').textContent = 'Ready - Press Ctrl+Y to start';
+      document.getElementById('status').className = 'ready';
+    });
+  </script>
+</body>
+</html>

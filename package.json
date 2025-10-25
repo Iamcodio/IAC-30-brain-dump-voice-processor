@@ -1,0 +1,15 @@
+{
+  "name": "braindump-voice-processor",
+  "version": "1.0.0",
+  "description": "Voice recording and transcription for brain dumps",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": ["voice", "recording", "transcription"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0"
+  }
+}
