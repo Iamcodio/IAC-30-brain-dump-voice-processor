@@ -12,6 +12,7 @@ from typing import List, Optional
 
 class ValidationError(Exception):
     """Raised when validation fails."""
+
     pass
 
 
@@ -30,7 +31,7 @@ class FileValidator:
     MAX_FILE_SIZE = 500 * 1024 * 1024
 
     # Allowed audio extensions
-    ALLOWED_EXTENSIONS = {'.wav', '.mp3', '.m4a', '.flac', '.ogg'}
+    ALLOWED_EXTENSIONS = {".wav", ".mp3", ".m4a", ".flac", ".ogg"}
 
     @staticmethod
     def validate_file_size(file_path: str, max_size: Optional[int] = None) -> None:
@@ -74,10 +75,12 @@ class FileValidator:
         abs_path = os.path.abspath(file_path)
 
         # Check for suspicious patterns
-        dangerous_patterns = ['..', '~', '$']
+        dangerous_patterns = ["..", "~", "$"]
         for pattern in dangerous_patterns:
             if pattern in file_path:
-                raise ValidationError(f"Path contains dangerous pattern '{pattern}': {file_path}")
+                raise ValidationError(
+                    f"Path contains dangerous pattern '{pattern}': {file_path}"
+                )
 
         # If base_dir specified, ensure path is within it
         if base_dir:
@@ -89,8 +92,7 @@ class FileValidator:
 
     @staticmethod
     def validate_extension(
-        file_path: str,
-        allowed_extensions: Optional[List[str]] = None
+        file_path: str, allowed_extensions: Optional[List[str]] = None
     ) -> None:
         """
         Validate file extension against whitelist.
@@ -102,7 +104,11 @@ class FileValidator:
         Raises:
             ValidationError: If extension not in whitelist
         """
-        extensions = allowed_extensions if allowed_extensions else FileValidator.ALLOWED_EXTENSIONS
+        extensions = (
+            allowed_extensions
+            if allowed_extensions
+            else FileValidator.ALLOWED_EXTENSIONS
+        )
 
         file_ext = Path(file_path).suffix.lower()
 
@@ -181,9 +187,7 @@ class FileValidator:
 
     @staticmethod
     def validate_output_path(
-        file_path: str,
-        base_dir: Optional[str] = None,
-        create_parent: bool = True
+        file_path: str, base_dir: Optional[str] = None, create_parent: bool = True
     ) -> None:
         """
         Validate output file path before writing.

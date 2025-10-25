@@ -14,6 +14,7 @@ from datetime import datetime
 
 class ErrorLevel(Enum):
     """Error severity levels."""
+
     INFO = "INFO"
     WARNING = "WARNING"
     ERROR = "ERROR"
@@ -65,7 +66,7 @@ class ErrorHandler:
         context: str,
         error_type: str,
         message: str,
-        exception: Optional[Exception] = None
+        exception: Optional[Exception] = None,
     ) -> None:
         """
         Notify all observers of an error event.
@@ -88,20 +89,22 @@ class ErrorHandler:
                 observer(level, context, error_type, message, exception)
             except Exception as e:
                 # Prevent observer errors from breaking the system
-                print(f"ERROR:ErrorHandler:ObserverFailure:Observer failed: {e}", file=sys.stderr)
+                print(
+                    f"ERROR:ErrorHandler:ObserverFailure:Observer failed: {e}",
+                    file=sys.stderr,
+                )
 
         # Always log to stderr for backup
         print(formatted_message, file=sys.stderr)
 
         # Print stack trace for errors and critical issues
         if exception and level in [ErrorLevel.ERROR, ErrorLevel.CRITICAL]:
-            traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
+            traceback.print_exception(
+                type(exception), exception, exception.__traceback__, file=sys.stderr
+            )
 
     def handle_exception(
-        self,
-        context: str,
-        exception: Exception,
-        fatal: bool = False
+        self, context: str, exception: Exception, fatal: bool = False
     ) -> None:
         """
         Handle an exception with automatic level determination.
@@ -131,7 +134,13 @@ class ErrorHandler:
 
 
 # Default stderr observer
-def stderr_observer(level: ErrorLevel, context: str, error_type: str, message: str, exception: Optional[Exception] = None) -> None:
+def stderr_observer(
+    level: ErrorLevel,
+    context: str,
+    error_type: str,
+    message: str,
+    exception: Optional[Exception] = None,
+) -> None:
     """
     Default observer that writes structured logs to stderr.
 

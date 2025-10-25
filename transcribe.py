@@ -13,16 +13,17 @@ import json
 import subprocess
 from pathlib import Path
 from datetime import datetime
+from typing import Dict, Any
 
 # Add src to path for core module imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src', 'python'))
 
-from core.error_handler import error_handler, ErrorLevel
-from core.validators import FileValidator, ValidationError
-from transcription.whisper_transcriber import WhisperTranscriber
+from core.error_handler import error_handler, ErrorLevel  # noqa: E402
+from core.validators import FileValidator, ValidationError  # noqa: E402
+from transcription.whisper_transcriber import WhisperTranscriber  # noqa: E402
 
 
-def get_audio_duration(audio_path):
+def get_audio_duration(audio_path: str) -> int:
     """
     Get duration of WAV audio file in seconds.
 
@@ -51,7 +52,7 @@ def get_audio_duration(audio_path):
         return 0
 
 
-def extract_first_line(transcript, max_length=100):
+def extract_first_line(transcript: str, max_length: int = 100) -> str:
     """
     Extract first line or first max_length characters from transcript.
 
@@ -75,7 +76,7 @@ def extract_first_line(transcript, max_length=100):
     return first_line
 
 
-def save_to_database(recording_data):
+def save_to_database(recording_data: Dict[str, Any]) -> bool:
     """
     Save recording metadata to database using Node.js database module.
 
@@ -177,7 +178,7 @@ if __name__ == "__main__":
         timestamp = datetime.now().isoformat()
 
         # Prepare recording metadata
-        recording_data = {
+        recording_data: Dict[str, Any] = {
             'id': f"rec_{int(datetime.now().timestamp() * 1000)}",
             'timestamp': timestamp,
             'duration': duration,

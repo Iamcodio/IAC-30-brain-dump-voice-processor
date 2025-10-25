@@ -10,9 +10,9 @@ import math
 from pathlib import Path
 
 # Add project root to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
-from transcribe import get_audio_duration, extract_first_line
+from transcribe import get_audio_duration, extract_first_line  # noqa: E402
 
 
 class TestTranscriptionPipeline:
@@ -34,11 +34,11 @@ class TestTranscriptionPipeline:
             samples.append(sample)
 
         # Write WAV file
-        with wave.open(str(audio_path), 'wb') as wav_file:
+        with wave.open(str(audio_path), "wb") as wav_file:
             wav_file.setnchannels(1)  # Mono
             wav_file.setsampwidth(2)  # 16-bit
             wav_file.setframerate(sample_rate)
-            wav_file.writeframes(struct.pack('<' + 'h' * len(samples), *samples))
+            wav_file.writeframes(struct.pack("<" + "h" * len(samples), *samples))
 
         return str(audio_path)
 
@@ -46,7 +46,7 @@ class TestTranscriptionPipeline:
         """Test that generated audio file is valid"""
         assert Path(test_audio_file).exists()
 
-        with wave.open(test_audio_file, 'r') as wav_file:
+        with wave.open(test_audio_file, "r") as wav_file:
             assert wav_file.getnchannels() == 1
             assert wav_file.getsampwidth() == 2
             assert wav_file.getframerate() == 44100
@@ -71,7 +71,7 @@ class TestTranscriptionPipeline:
 
     def test_wav_file_properties(self, test_audio_file):
         """Test that WAV file has correct audio properties"""
-        with wave.open(test_audio_file, 'r') as wav_file:
+        with wave.open(test_audio_file, "r") as wav_file:
             # Verify format matches recorder.py output
             assert wav_file.getnchannels() == 1  # Mono
             assert wav_file.getsampwidth() == 2  # 16-bit
@@ -87,11 +87,11 @@ class TestTranscriptionPipeline:
         empty_audio = tmp_path / "empty.wav"
 
         # Create minimal valid WAV file with no actual audio
-        with wave.open(str(empty_audio), 'wb') as wav_file:
+        with wave.open(str(empty_audio), "wb") as wav_file:
             wav_file.setnchannels(1)
             wav_file.setsampwidth(2)
             wav_file.setframerate(44100)
-            wav_file.writeframes(b'')  # No audio data
+            wav_file.writeframes(b"")  # No audio data
 
         duration = get_audio_duration(str(empty_audio))
         assert duration == 0
@@ -109,11 +109,11 @@ class TestTranscriptionPipeline:
             # Create silence
             samples = [0] * (sample_rate * duration_sec)
 
-            with wave.open(str(audio_path), 'wb') as wav_file:
+            with wave.open(str(audio_path), "wb") as wav_file:
                 wav_file.setnchannels(1)
                 wav_file.setsampwidth(2)
                 wav_file.setframerate(sample_rate)
-                wav_file.writeframes(struct.pack('<' + 'h' * len(samples), *samples))
+                wav_file.writeframes(struct.pack("<" + "h" * len(samples), *samples))
 
             # Extract duration
             duration = get_audio_duration(str(audio_path))
@@ -135,7 +135,7 @@ Third, schedule the meeting."""
         assert first_line == "This is a brain dump recording."
 
         # Verify multiline handling
-        lines = raw_transcript.split('\n')
+        lines = raw_transcript.split("\n")
         assert len(lines) == 5
 
     def test_special_characters_in_transcript(self):
@@ -151,11 +151,14 @@ Third, schedule the meeting."""
         assert "coffee" in first_line
         assert "croissants" in first_line
 
-    @pytest.mark.parametrize("duration_seconds,expected_frames", [
-        (1, 44100),
-        (5, 220500),
-        (10, 441000),
-    ])
+    @pytest.mark.parametrize(
+        "duration_seconds,expected_frames",
+        [
+            (1, 44100),
+            (5, 220500),
+            (10, 441000),
+        ],
+    )
     def test_various_audio_durations(self, tmp_path, duration_seconds, expected_frames):
         """Test audio duration calculation for various lengths"""
         audio_path = tmp_path / f"test_{duration_seconds}s.wav"
@@ -164,11 +167,11 @@ Third, schedule the meeting."""
         # Create silence
         samples = [0] * expected_frames
 
-        with wave.open(str(audio_path), 'wb') as wav_file:
+        with wave.open(str(audio_path), "wb") as wav_file:
             wav_file.setnchannels(1)
             wav_file.setsampwidth(2)
             wav_file.setframerate(sample_rate)
-            wav_file.writeframes(struct.pack('<' + 'h' * len(samples), *samples))
+            wav_file.writeframes(struct.pack("<" + "h" * len(samples), *samples))
 
         duration = get_audio_duration(str(audio_path))
         assert duration == duration_seconds
