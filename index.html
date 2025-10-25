@@ -64,24 +64,7 @@
   </div>
   <div id="status" class="ready">Ready - Press Ctrl+Y to start</div>
   <canvas id="waveform"></canvas>
-  
-  <script>
-    const { ipcRenderer } = require('electron');
 
-    ipcRenderer.on('recording-started', () => {
-      document.getElementById('status').textContent = 'Recording...';
-      document.getElementById('status').className = 'recording';
-    });
-
-    ipcRenderer.on('recording-stopped', () => {
-      document.getElementById('status').textContent = 'Ready - Press Ctrl+Y to start';
-      document.getElementById('status').className = 'ready';
-    });
-
-    // Navigation to history view
-    document.getElementById('historyBtn').addEventListener('click', () => {
-      ipcRenderer.send('show-history');
-    });
-  </script>
+  <script src="src/renderer.js"></script>
 </body>
 </html>

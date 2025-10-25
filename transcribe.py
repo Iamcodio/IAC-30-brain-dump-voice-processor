@@ -6,13 +6,20 @@ Transcription script that:
 3. Saves recording metadata to database via Node.js
 """
 
+import os
 import sys
 import wave
 import json
 import subprocess
 from pathlib import Path
 from datetime import datetime
-from src.python.transcription.whisper_transcriber import WhisperTranscriber
+
+# Add src to path for core module imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src', 'python'))
+
+from core.error_handler import error_handler, ErrorLevel
+from core.validators import FileValidator, ValidationError
+from transcription.whisper_transcriber import WhisperTranscriber
 
 
 def get_audio_duration(audio_path):
@@ -26,13 +33,21 @@ def get_audio_duration(audio_path):
         int: Duration in seconds (rounded)
     """
     try:
+        # Validate file exists
+        FileValidator.validate_file_exists(audio_path)
+
         with wave.open(audio_path, 'r') as wav_file:
             frames = wav_file.getnframes()
             rate = wav_file.getframerate()
             duration = frames / float(rate)
             return round(duration)
     except Exception as e:
-        print(f"Warning: Could not read audio duration: {e}", file=sys.stderr)
+        error_handler.notify(
+            ErrorLevel.WARNING,
+            "get_audio_duration",
+            type(e).__name__,
+            f"Could not read audio duration: {e}"
+        )
         return 0
 
 
@@ -74,6 +89,10 @@ def save_to_database(recording_data):
         # Create a Node.js script to add the recording
         script_path = Path(__file__).parent / 'src' / 'add_recording.js'
 
+        # Validate script exists
+        if not script_path.exists():
+            raise FileNotFoundError(f"Database script not found: {script_path}")
+
         # Call Node.js script with JSON data
         result = subprocess.run(
             ['node', str(script_path)],
@@ -84,26 +103,67 @@ def save_to_database(recording_data):
         )
 
         if result.returncode == 0:
-            print(f"Database updated: {recording_data['id']}", file=sys.stderr)
+            error_handler.notify(
+                ErrorLevel.INFO,
+                "save_to_database",
+                "DatabaseUpdated",
+                f"Database updated: {recording_data['id']}"
+            )
             return True
         else:
-            print(f"Database error: {result.stderr}", file=sys.stderr)
+            error_handler.notify(
+                ErrorLevel.ERROR,
+                "save_to_database",
+                "DatabaseError",
+                f"Database script failed: {result.stderr}"
+            )
             return False
 
+    except subprocess.TimeoutExpired:
+        error_handler.notify(
+            ErrorLevel.ERROR,
+            "save_to_database",
+            "DatabaseTimeout",
+            "Database operation timed out after 5 seconds"
+        )
+        return False
     except Exception as e:
-        print(f"Failed to update database: {e}", file=sys.stderr)
+        error_handler.handle_exception("save_to_database", e)
         return False
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: transcribe.py <audio_file>", file=sys.stderr)
-        sys.exit(1)
-
-    audio_file = sys.argv[1]
-    transcriber = WhisperTranscriber()
-
     try:
+        # Validate command line arguments
+        if len(sys.argv) < 2:
+            error_handler.notify(
+                ErrorLevel.ERROR,
+                "main",
+                "InvalidArguments",
+                "Usage: transcribe.py <audio_file>"
+            )
+            sys.exit(1)
+
+        audio_file = sys.argv[1]
+
+        # Validate audio file before processing
+        try:
+            project_dir = os.path.dirname(__file__)
+            outputs_dir = os.path.join(project_dir, "outputs", "audio")
+            FileValidator.validate_audio_file(audio_file, base_dir=outputs_dir)
+        except ValidationError as e:
+            error_handler.notify(
+                ErrorLevel.ERROR,
+                "main.validation",
+                "ValidationError",
+                str(e)
+            )
+            print(f"ERROR:ValidationError:{e}", flush=True)
+            sys.exit(1)
+
+        # Initialize transcriber
+        transcriber = WhisperTranscriber()
+
         # Transcribe audio (returns dict with txt, md, and transcript)
         result = transcriber.transcribe(audio_file)
 
@@ -138,6 +198,13 @@ if __name__ == "__main__":
         print(f"TRANSCRIPT_SAVED:{result['md']}", flush=True)
         print(f"TRANSCRIPT_TXT:{result['txt']}", flush=True)
 
+    except KeyboardInterrupt:
+        error_handler.notify(
+            ErrorLevel.INFO,
+            "main",
+            "KeyboardInterrupt",
+            "Transcription interrupted by user"
+        )
+        sys.exit(130)
     except Exception as e:
-        print(f"ERROR: {e}", file=sys.stderr)
-        sys.exit(1)
+        error_handler.handle_exception("main", e, fatal=True)
