@@ -92,6 +92,19 @@
         "model": "whisper-base",
         "language": "en"
       }
+    },
+    {
+      "id": "rec_1761392529533",
+      "timestamp": "2025-10-25T11:42:09.533Z",
+      "duration": 5,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_12-42-08.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_124208.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_124208.md",
+      "firstLine": "Hey me with the bangle, with the bangle, with the bangle.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
     }
   ]
 }

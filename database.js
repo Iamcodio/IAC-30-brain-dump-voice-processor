@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { errorHandler, ErrorLevel } = require('./src/js/error_handler');
 
 /**
  * Database module for managing recordings
@@ -12,6 +13,48 @@ class Database {
     this.dbPath = path.join(baseDir, 'src', 'data', 'recordings.json');
     this.audioDir = path.join(baseDir, 'outputs', 'audio');
     this.transcriptDir = path.join(baseDir, 'outputs', 'transcripts');
+
+    // Validate and create database file if needed
+    try {
+      this.initializeDatabase();
+    } catch (error) {
+      errorHandler.handleException('Database.constructor', error, true);
+    }
+  }
+
+  /**
+   * Initialize database file if it doesn't exist
+   */
+  initializeDatabase() {
+    try {
+      const dbDir = path.dirname(this.dbPath);
+
+      // Create data directory if it doesn't exist
+      if (!fs.existsSync(dbDir)) {
+        fs.mkdirSync(dbDir, { recursive: true });
+        errorHandler.notify(
+          ErrorLevel.INFO,
+          'Database.initializeDatabase',
+          'DirectoryCreated',
+          `Created database directory: ${dbDir}`
+        );
+      }
+
+      // Create empty database file if it doesn't exist
+      if (!fs.existsSync(this.dbPath)) {
+        const emptyDB = { recordings: [] };
+        fs.writeFileSync(this.dbPath, JSON.stringify(emptyDB, null, 2));
+        errorHandler.notify(
+          ErrorLevel.INFO,
+          'Database.initializeDatabase',
+          'DatabaseCreated',
+          `Created database file: ${this.dbPath}`
+        );
+      }
+    } catch (error) {
+      errorHandler.handleException('Database.initializeDatabase', error);
+      throw error;
+    }
   }
 
   /**
@@ -20,10 +63,34 @@ class Database {
    */
   readDB() {
     try {
+      // Validate file exists
+      if (!fs.existsSync(this.dbPath)) {
+        errorHandler.notify(
+          ErrorLevel.WARNING,
+          'Database.readDB',
+          'FileNotFound',
+          'Database file not found, returning empty database'
+        );
+        return { recordings: [] };
+      }
+
       const data = fs.readFileSync(this.dbPath, 'utf-8');
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+
+      // Validate structure
+      if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.recordings)) {
+        errorHandler.notify(
+          ErrorLevel.WARNING,
+          'Database.readDB',
+          'InvalidStructure',
+          'Database has invalid structure, returning empty database'
+        );
+        return { recordings: [] };
+      }
+
+      return parsed;
     } catch (error) {
-      console.warn('Database read error, initializing empty database:', error.message);
+      errorHandler.handleException('Database.readDB', error);
       return { recordings: [] };
     }
   }
@@ -35,10 +102,27 @@ class Database {
   getAll() {
     try {
       const db = this.readDB();
+
+      if (!db.recordings || db.recordings.length === 0) {
+        return [];
+      }
+
       const recordings = db.recordings.map(rec => this.formatRecording(rec));
-      return recordings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      return recordings.sort((a, b) => {
+        try {
+          return new Date(b.timestamp) - new Date(a.timestamp);
+        } catch (error) {
+          errorHandler.notify(
+            ErrorLevel.WARNING,
+            'Database.getAll.sort',
+            'InvalidTimestamp',
+            'Invalid timestamp in recording'
+          );
+          return 0;
+        }
+      });
     } catch (error) {
-      console.error('Error getting recordings:', error);
+      errorHandler.handleException('Database.getAll', error);
       return [];
     }
   }
@@ -50,31 +134,61 @@ class Database {
    * @returns {Object} Formatted recording object
    */
   formatRecording(recording) {
-    // Read full text from markdown file if available
-    let fullText = '';
-    if (recording.transcriptMd && fs.existsSync(recording.transcriptMd)) {
-      try {
-        const content = fs.readFileSync(recording.transcriptMd, 'utf-8');
-        fullText = this.extractTranscriptText(content);
-      } catch (error) {
-        console.warn(`Could not read transcript: ${recording.transcriptMd}`);
+    try {
+      // Validate recording object
+      if (!recording || typeof recording !== 'object') {
+        errorHandler.notify(
+          ErrorLevel.WARNING,
+          'Database.formatRecording',
+          'InvalidRecording',
+          'Invalid recording object'
+        );
+        return null;
       }
+
+      // Read full text from markdown file if available
+      let fullText = '';
+      if (recording.transcriptMd) {
+        try {
+          if (fs.existsSync(recording.transcriptMd)) {
+            const content = fs.readFileSync(recording.transcriptMd, 'utf-8');
+            fullText = this.extractTranscriptText(content);
+          } else {
+            errorHandler.notify(
+              ErrorLevel.WARNING,
+              'Database.formatRecording',
+              'TranscriptNotFound',
+              `Transcript file not found: ${recording.transcriptMd}`
+            );
+          }
+        } catch (error) {
+          errorHandler.notify(
+            ErrorLevel.WARNING,
+            'Database.formatRecording',
+            'TranscriptReadError',
+            `Could not read transcript: ${recording.transcriptMd}`
+          );
+        }
+      }
+
+      // Format duration for display
+      const durationStr = this.formatDuration(recording.duration);
+
+      return {
+        id: recording.id,
+        timestamp: this.formatTimestamp(recording.timestamp),
+        audioPath: recording.audioFile,
+        transcriptPath: recording.transcriptMd || recording.transcriptTxt,
+        transcriptTxt: recording.transcriptTxt,
+        transcriptMd: recording.transcriptMd,
+        duration: durationStr,
+        preview: recording.firstLine || 'No transcript available',
+        fullText: fullText || recording.firstLine || ''
+      };
+    } catch (error) {
+      errorHandler.handleException('Database.formatRecording', error);
+      return null;
     }
-
-    // Format duration for display
-    const durationStr = this.formatDuration(recording.duration);
-
-    return {
-      id: recording.id,
-      timestamp: this.formatTimestamp(recording.timestamp),
-      audioPath: recording.audioFile,
-      transcriptPath: recording.transcriptMd || recording.transcriptTxt,
-      transcriptTxt: recording.transcriptTxt,
-      transcriptMd: recording.transcriptMd,
-      duration: durationStr,
-      preview: recording.firstLine || 'No transcript available',
-      fullText: fullText || recording.firstLine || ''
-    };
   }
 
   /**
@@ -145,20 +259,41 @@ class Database {
    * @returns {Array} Filtered array of recording objects
    */
   search(query) {
-    const allRecordings = this.getAll();
-    query = query.toLowerCase().trim();
+    try {
+      const allRecordings = this.getAll();
 
-    if (!query) {
-      return allRecordings;
+      // Validate and sanitize query
+      if (!query || typeof query !== 'string') {
+        return allRecordings;
+      }
+
+      query = query.toLowerCase().trim();
+
+      if (!query) {
+        return allRecordings;
+      }
+
+      return allRecordings.filter(recording => {
+        try {
+          return (
+            (recording.preview && recording.preview.toLowerCase().includes(query)) ||
+            (recording.fullText && recording.fullText.toLowerCase().includes(query)) ||
+            (recording.timestamp && recording.timestamp.toLowerCase().includes(query))
+          );
+        } catch (error) {
+          errorHandler.notify(
+            ErrorLevel.WARNING,
+            'Database.search.filter',
+            'FilterError',
+            `Error filtering recording: ${error.message}`
+          );
+          return false;
+        }
+      });
+    } catch (error) {
+      errorHandler.handleException('Database.search', error);
+      return [];
     }
-
-    return allRecordings.filter(recording => {
-      return (
-        (recording.preview && recording.preview.toLowerCase().includes(query)) ||
-        (recording.fullText && recording.fullText.toLowerCase().includes(query)) ||
-        (recording.timestamp && recording.timestamp.toLowerCase().includes(query))
-      );
-    });
   }
 
   /**
@@ -167,9 +302,24 @@ class Database {
    * @returns {Object|null} Recording object or null
    */
   getById(id) {
-    const db = this.readDB();
-    const recording = db.recordings.find(rec => rec.id === id);
-    return recording ? this.formatRecording(recording) : null;
+    try {
+      if (!id || typeof id !== 'string') {
+        errorHandler.notify(
+          ErrorLevel.WARNING,
+          'Database.getById',
+          'InvalidId',
+          'Invalid recording ID provided'
+        );
+        return null;
+      }
+
+      const db = this.readDB();
+      const recording = db.recordings.find(rec => rec.id === id);
+      return recording ? this.formatRecording(recording) : null;
+    } catch (error) {
+      errorHandler.handleException('Database.getById', error);
+      return null;
+    }
   }
 
   /**
@@ -178,11 +328,26 @@ class Database {
    * @returns {Object|null} Recording object or null
    */
   getByPath(transcriptPath) {
-    const db = this.readDB();
-    const recording = db.recordings.find(rec =>
-      rec.transcriptMd === transcriptPath || rec.transcriptTxt === transcriptPath
-    );
-    return recording ? this.formatRecording(recording) : null;
+    try {
+      if (!transcriptPath || typeof transcriptPath !== 'string') {
+        errorHandler.notify(
+          ErrorLevel.WARNING,
+          'Database.getByPath',
+          'InvalidPath',
+          'Invalid transcript path provided'
+        );
+        return null;
+      }
+
+      const db = this.readDB();
+      const recording = db.recordings.find(rec =>
+        rec.transcriptMd === transcriptPath || rec.transcriptTxt === transcriptPath
+      );
+      return recording ? this.formatRecording(recording) : null;
+    } catch (error) {
+      errorHandler.handleException('Database.getByPath', error);
+      return null;
+    }
   }
 }
 
