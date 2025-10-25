@@ -14,6 +14,12 @@
 const { spawn } = require('child_process');
 const { EventEmitter } = require('events');
 const { errorHandler, ErrorLevel } = require('./error_handler');
+const {
+  PROCESS_CONFIG,
+  PROTOCOL,
+  ERROR_TYPES,
+  CONTEXTS
+} = require('../config/constants.js');
 
 class ProcessManager extends EventEmitter {
   constructor(options = {}) {
@@ -23,8 +29,8 @@ class ProcessManager extends EventEmitter {
     this.command = options.command;
     this.args = options.args || [];
     this.cwd = options.cwd || process.cwd();
-    this.maxRestarts = options.maxRestarts || 5;
-    this.baseDelay = options.baseDelay || 1000; // 1 second
+    this.maxRestarts = options.maxRestarts || PROCESS_CONFIG.MAX_RESTARTS;
+    this.baseDelay = options.baseDelay || PROCESS_CONFIG.BASE_DELAY_MS;
 
     this.process = null;
     this.restartCount = 0;
@@ -41,8 +47,8 @@ class ProcessManager extends EventEmitter {
       if (this.isRunning) {
         errorHandler.notify(
           ErrorLevel.WARNING,
-          `ProcessManager.${this.name}.start`,
-          'AlreadyRunning',
+          `${CONTEXTS.PM_START}.${this.name}`,
+          ERROR_TYPES.ALREADY_RUNNING,
           'Process already running'
         );
         return;
@@ -50,14 +56,14 @@ class ProcessManager extends EventEmitter {
 
       errorHandler.notify(
         ErrorLevel.INFO,
-        `ProcessManager.${this.name}.start`,
-        'ProcessStarting',
+        `${CONTEXTS.PM_START}.${this.name}`,
+        ERROR_TYPES.PROCESS_STARTING,
         `Starting ${this.name} process`
       );
 
       this.process = spawn(this.command, this.args, {
         cwd: this.cwd,
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: PROCESS_CONFIG.STDIO_MODE
       });
 
       this.isRunning = true;
@@ -65,7 +71,7 @@ class ProcessManager extends EventEmitter {
 
       // Set up event handlers
       this.process.on('error', (error) => {
-        errorHandler.handleException(`ProcessManager.${this.name}.error`, error);
+        errorHandler.handleException(`${CONTEXTS.PM_ERROR}.${this.name}`, error);
         this.emit('error', error);
       });
 
@@ -76,8 +82,8 @@ class ProcessManager extends EventEmitter {
         const exitReason = signal ? `signal ${signal}` : `code ${code}`;
         errorHandler.notify(
           ErrorLevel.WARNING,
-          `ProcessManager.${this.name}.exit`,
-          'ProcessExited',
+          `${CONTEXTS.PM_EXIT}.${this.name}`,
+          ERROR_TYPES.PROCESS_EXITED,
           `Process exited with ${exitReason}`
         );
 
@@ -87,8 +93,8 @@ class ProcessManager extends EventEmitter {
         } else if (this.restartCount >= this.maxRestarts) {
           errorHandler.notify(
             ErrorLevel.CRITICAL,
-            `ProcessManager.${this.name}.restart`,
-            'MaxRestartsExceeded',
+            `${CONTEXTS.PM_RESTART}.${this.name}`,
+            ERROR_TYPES.MAX_RESTARTS_EXCEEDED,
             `Process failed after ${this.maxRestarts} restart attempts`
           );
           this.emit('failed');
@@ -112,14 +118,14 @@ class ProcessManager extends EventEmitter {
       if (this.restartCount > 0) {
         errorHandler.notify(
           ErrorLevel.INFO,
-          `ProcessManager.${this.name}.start`,
-          'ProcessRestarted',
+          `${CONTEXTS.PM_START}.${this.name}`,
+          ERROR_TYPES.PROCESS_RESTARTED,
           `Process restarted successfully (attempt ${this.restartCount + 1})`
         );
       }
 
     } catch (error) {
-      errorHandler.handleException(`ProcessManager.${this.name}.start`, error);
+      errorHandler.handleException(`${CONTEXTS.PM_START}.${this.name}`, error);
       this.emit('error', error);
     }
   }
@@ -136,8 +142,8 @@ class ProcessManager extends EventEmitter {
 
     errorHandler.notify(
       ErrorLevel.INFO,
-      `ProcessManager.${this.name}.restart`,
-      'RestartScheduled',
+      `${CONTEXTS.PM_RESTART}.${this.name}`,
+      ERROR_TYPES.RESTART_SCHEDULED,
       `Restarting in ${delay}ms (attempt ${this.restartCount}/${this.maxRestarts})`
     );
 
@@ -168,32 +174,32 @@ class ProcessManager extends EventEmitter {
 
     errorHandler.notify(
       ErrorLevel.INFO,
-      `ProcessManager.${this.name}.stop`,
-      'ProcessStopping',
+      `${CONTEXTS.PM_STOP}.${this.name}`,
+      ERROR_TYPES.PROCESS_STOPPING,
       'Stopping process'
     );
 
     try {
       // Try graceful shutdown first
       if (this.process.stdin && !this.process.stdin.destroyed) {
-        this.process.stdin.write('quit\n');
+        this.process.stdin.write(PROTOCOL.CMD_QUIT);
       }
 
-      // Force kill after 5 seconds if still running
+      // Force kill after timeout if still running
       setTimeout(() => {
         if (this.isRunning && this.process) {
           errorHandler.notify(
             ErrorLevel.WARNING,
-            `ProcessManager.${this.name}.stop`,
-            'ForcedKill',
+            `${CONTEXTS.PM_STOP}.${this.name}`,
+            ERROR_TYPES.FORCED_KILL,
             'Process did not exit gracefully, forcing kill'
           );
           this.process.kill('SIGKILL');
         }
-      }, 5000);
+      }, PROCESS_CONFIG.GRACEFUL_SHUTDOWN_TIMEOUT_MS);
 
     } catch (error) {
-      errorHandler.handleException(`ProcessManager.${this.name}.stop`, error);
+      errorHandler.handleException(`${CONTEXTS.PM_STOP}.${this.name}`, error);
     }
   }
 
@@ -205,8 +211,8 @@ class ProcessManager extends EventEmitter {
     if (!this.isRunning || !this.process || !this.process.stdin) {
       errorHandler.notify(
         ErrorLevel.ERROR,
-        `ProcessManager.${this.name}.send`,
-        'ProcessNotRunning',
+        `${CONTEXTS.PM_SEND}.${this.name}`,
+        ERROR_TYPES.PROCESS_NOT_RUNNING,
         'Cannot send data: process not running'
       );
       return false;
@@ -216,7 +222,7 @@ class ProcessManager extends EventEmitter {
       this.process.stdin.write(data);
       return true;
     } catch (error) {
-      errorHandler.handleException(`ProcessManager.${this.name}.send`, error);
+      errorHandler.handleException(`${CONTEXTS.PM_SEND}.${this.name}`, error);
       return false;
     }
   }
@@ -242,8 +248,8 @@ class ProcessManager extends EventEmitter {
     if (this.restartCount > 0) {
       errorHandler.notify(
         ErrorLevel.INFO,
-        `ProcessManager.${this.name}.reset`,
-        'RestartCountReset',
+        `${CONTEXTS.PM_RESET}.${this.name}`,
+        ERROR_TYPES.RESTART_COUNT_RESET,
         `Restart count reset from ${this.restartCount} to 0`
       );
       this.restartCount = 0;

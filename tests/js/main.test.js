@@ -69,6 +69,83 @@ jest.mock('../../src/js/error_handler', () => ({
   }
 }));
 
+// Mock FileValidator
+const mockFileValidator = {
+  validateExists: jest.fn(),
+  validateExistsWithLevel: jest.fn(),
+  validateSafe: jest.fn(),
+  validateNoTraversal: jest.fn(),
+  validateWithinBase: jest.fn(),
+  validateExistsWarn: jest.fn(() => true)
+};
+jest.mock('../../src/js/utils/file_validator.js', () => ({
+  FileValidator: mockFileValidator
+}));
+
+// Mock constants
+jest.mock('../../src/config/constants.js', () => ({
+  WINDOW_CONFIG: { WIDTH: 800, HEIGHT: 600, NODE_INTEGRATION: false, CONTEXT_ISOLATION: true },
+  PATHS: {
+    PYTHON_VENV: '.venv/bin/python',
+    RECORDER_SCRIPT: 'recorder.py',
+    TRANSCRIBER_SCRIPT: 'transcribe.py',
+    PRELOAD_SCRIPT: 'src/preload.js',
+    INDEX_HTML: 'index.html',
+    HISTORY_HTML: 'history.html'
+  },
+  PROCESS_CONFIG: { MAX_RESTARTS: 5, BASE_DELAY_MS: 1000 },
+  PROTOCOL: {
+    READY: 'READY',
+    RECORDING_STARTED: 'RECORDING_STARTED',
+    RECORDING_STOPPED: 'RECORDING_STOPPED:',
+    ERROR_PREFIX: 'ERROR:',
+    TRANSCRIPT_SAVED: 'TRANSCRIPT_SAVED:',
+    CMD_START: 'start\n',
+    CMD_STOP: 'stop\n',
+    NO_AUDIO_CAPTURED: 'no_audio'
+  },
+  SHORTCUTS: { TOGGLE_RECORDING: 'Control+Y' },
+  PLATFORM: { DARWIN: 'darwin', AUDIO_PLAYER_MACOS: 'QuickTime Player' },
+  EXIT_CODES: { SUCCESS: 0 },
+  ERROR_TYPES: {
+    RECORDER_READY: 'RecorderReady',
+    NO_AUDIO_RECORDED: 'NoAudioRecorded',
+    RECORDER_ERROR: 'RecorderError',
+    PROCESS_ERROR: 'ProcessError',
+    PROCESS_RESTARTING: 'ProcessRestarting',
+    PROCESS_FAILED: 'ProcessFailed',
+    TRANSCRIPT_SAVED: 'TranscriptSaved',
+    TRANSCRIPTION_ERROR: 'TranscriptionError',
+    TRANSCRIPTION_COMPLETE: 'TranscriptionComplete',
+    TRANSCRIPTION_FAILED: 'TranscriptionFailed',
+    RECORDER_NOT_READY: 'RecorderNotReady',
+    SEND_FAILED: 'SendFailed'
+  },
+  CONTEXTS: {
+    START_RECORDER: 'startRecorderProcess',
+    RECORDER_STDOUT: 'recorder.stdout',
+    RECORDER_PROCESS: 'recorder.process',
+    TRANSCRIBE_AUDIO: 'transcribeAudio',
+    TRANSCRIBE_STDOUT: 'transcribeAudio.stdout',
+    TRANSCRIBE_SPAWN: 'transcribeAudio.spawn',
+    APP_WILL_QUIT: 'app.will-quit',
+    START_RECORDING: 'startRecording',
+    STOP_RECORDING: 'stopRecording',
+    IPC_GET_RECORDINGS: 'ipc.get-recordings',
+    IPC_SEARCH_RECORDINGS: 'ipc.search-recordings',
+    IPC_READ_FILE: 'ipc.read-file',
+    IPC_PLAY_AUDIO: 'ipc.play-audio',
+    IPC_VIEW_FILE: 'ipc.view-file',
+    IPC_SHOW_HISTORY: 'ipc.show-history',
+    IPC_SHOW_RECORDER: 'ipc.show-recorder'
+  },
+  SPAWN_COMMANDS: {
+    MACOS_OPEN: 'open',
+    MACOS_OPEN_APP_FLAG: '-a'
+  },
+  FILE_OPS: { ENCODING: 'utf-8' }
+}));
+
 describe('Main.js - Electron Main Process', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -100,14 +177,17 @@ describe('Main.js - Electron Main Process', () => {
 
   describe('Initialization', () => {
     test('should validate Python path exists', () => {
-      mockFs.existsSync.mockReturnValue(false);
+      // Make FileValidator throw when path doesn't exist
+      mockFileValidator.validateExistsWithLevel.mockImplementation(() => {
+        throw new Error('File not found');
+      });
 
       expect(() => {
         require('../../main.js');
       }).not.toThrow();
 
-      // Error handler should be notified
-      expect(mockErrorHandler.notify).toHaveBeenCalled();
+      // FileValidator should have been called
+      expect(mockFileValidator.validateExistsWithLevel).toHaveBeenCalled();
     });
 
     test('should create ProcessManager with correct options', () => {

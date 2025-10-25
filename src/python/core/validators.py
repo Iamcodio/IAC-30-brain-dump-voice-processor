@@ -9,6 +9,8 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
+from config.settings import FILES
+
 
 class ValidationError(Exception):
     """Raised when validation fails."""
@@ -27,11 +29,11 @@ class FileValidator:
     - Existence verification
     """
 
-    # 500MB limit for audio files
-    MAX_FILE_SIZE = 500 * 1024 * 1024
+    # 500MB limit for audio files (from config.settings.FILES)
+    MAX_FILE_SIZE = FILES.MAX_FILE_SIZE_BYTES
 
-    # Allowed audio extensions
-    ALLOWED_EXTENSIONS = {".wav", ".mp3", ".m4a", ".flac", ".ogg"}
+    # Allowed audio extensions (from config.settings.FILES)
+    ALLOWED_EXTENSIONS = FILES.ALLOWED_EXTENSIONS
 
     @staticmethod
     def validate_file_size(file_path: str, max_size: Optional[int] = None) -> None:
@@ -75,8 +77,7 @@ class FileValidator:
         abs_path = os.path.abspath(file_path)
 
         # Check for suspicious patterns
-        dangerous_patterns = ["..", "~", "$"]
-        for pattern in dangerous_patterns:
+        for pattern in FILES.DANGEROUS_PATH_PATTERNS:
             if pattern in file_path:
                 raise ValidationError(
                     f"Path contains dangerous pattern '{pattern}': {file_path}"

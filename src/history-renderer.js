@@ -3,6 +3,51 @@
  * Communicates with main process ONLY via window.electronAPI (preload.js)
  */
 
+// Import constants (browser environment - need to use a different approach)
+// Note: In browser context, we can't use require(). Constants are duplicated here.
+// TODO: Consider bundling if this becomes maintenance burden.
+
+// Constants from src/config/constants.js
+const DISPLAY = { BLOCK: 'block', NONE: 'none' };
+const TEXT_LIMITS = { PREVIEW_MAX_LENGTH: 150, PREVIEW_ELLIPSIS: '...' };
+const DATE_FORMAT = {
+  MONTHS_SHORT: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  TIME_12H_THRESHOLD: 12,
+  MINUTE_PAD_LENGTH: 2,
+  HOUR_PAD_LENGTH: 2,
+  PAD_CHAR: '0'
+};
+const TIMESTAMP_REGEX = /(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})/;
+const MARKDOWN = { SEPARATOR: '---', HEADER_PREFIX: '#', METADATA_PREFIX: '**', LINE_SEPARATOR: '\n' };
+const DURATION = { UNKNOWN_LABEL: 'Unknown', NO_TRANSCRIPT_LABEL: 'No transcript available' };
+const CSS_CLASSES = {
+  SHOW: 'show',
+  RECORDING_ITEM: 'recording-item',
+  RECORDING_HEADER: 'recording-header',
+  RECORDING_DATE: 'recording-date',
+  RECORDING_DURATION: 'recording-duration',
+  RECORDING_PREVIEW: 'recording-preview',
+  RECORDING_ACTIONS: 'recording-actions',
+  ACTION_BTN: 'action-btn',
+  ACTION_BTN_PLAY: 'play',
+  ACTION_BTN_COPY: 'copy'
+};
+const BUTTON_CONTENT = {
+  PLAY: '<span>▶</span><span>Play</span>',
+  VIEW: '<span>📄</span><span>View</span>',
+  COPY: '<span>📋</span><span>Copy</span>'
+};
+const TOAST = {
+  DURATION_MS: 3000,
+  COLOR_SUCCESS: '#4caf50',
+  COLOR_ERROR: '#f44336'
+};
+const MESSAGES = {
+  COPY_SUCCESS: 'Copied to clipboard!',
+  COPY_ERROR: 'Failed to copy transcript',
+  LOAD_ERROR: 'Error loading recordings'
+};
+
 // State
 let allRecordings = [];
 let filteredRecordings = [];
@@ -25,7 +70,7 @@ function formatDate(timestamp) {
     const date = new Date(timestamp);
     if (isNaN(date.getTime())) {
       // Try parsing from filename format: 2025-10-25_03-17-45
-      const parts = timestamp.match(/(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})/);
+      const parts = timestamp.match(TIMESTAMP_REGEX);
       if (parts) {
         const [, year, month, day, hour, min, sec] = parts;
         const parsed = new Date(year, month - 1, day, hour, min, sec);
@@ -45,15 +90,14 @@ function formatDate(timestamp) {
  * @returns {string} Formatted string like "Oct 25, 03:17 AM"
  */
 function formatDateTime(date) {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const month = months[date.getMonth()];
+  const month = DATE_FORMAT.MONTHS_SHORT[date.getMonth()];
   const day = date.getDate();
   let hour = date.getHours();
-  const min = String(date.getMinutes()).padStart(2, '0');
-  const ampm = hour >= 12 ? 'PM' : 'AM';
-  hour = hour % 12 || 12;
+  const min = String(date.getMinutes()).padStart(DATE_FORMAT.MINUTE_PAD_LENGTH, DATE_FORMAT.PAD_CHAR);
+  const ampm = hour >= DATE_FORMAT.TIME_12H_THRESHOLD ? 'PM' : 'AM';
+  hour = hour % DATE_FORMAT.TIME_12H_THRESHOLD || DATE_FORMAT.TIME_12H_THRESHOLD;
 
-  return `${month} ${day}, ${String(hour).padStart(2, '0')}:${min} ${ampm}`;
+  return `${month} ${day}, ${String(hour).padStart(DATE_FORMAT.HOUR_PAD_LENGTH, DATE_FORMAT.PAD_CHAR)}:${min} ${ampm}`;
 }
 
 /**
@@ -62,17 +106,17 @@ function formatDateTime(date) {
  * @returns {string} First meaningful line
  */
 function getPreviewText(content) {
-  const lines = content.split('\n').filter(line => line.trim());
+  const lines = content.split(MARKDOWN.LINE_SEPARATOR).filter(line => line.trim());
 
   // Skip markdown headers and metadata
   for (let line of lines) {
     line = line.trim();
-    if (line && !line.startsWith('#') && !line.startsWith('**') && !line.startsWith('---')) {
-      return line.length > 150 ? line.substring(0, 150) + '...' : line;
+    if (line && !line.startsWith(MARKDOWN.HEADER_PREFIX) && !line.startsWith(MARKDOWN.METADATA_PREFIX) && !line.startsWith(MARKDOWN.SEPARATOR)) {
+      return line.length > TEXT_LIMITS.PREVIEW_MAX_LENGTH ? line.substring(0, TEXT_LIMITS.PREVIEW_MAX_LENGTH) + TEXT_LIMITS.PREVIEW_ELLIPSIS : line;
     }
   }
 
-  return 'No transcript available';
+  return DURATION.NO_TRANSCRIPT_LABEL;
 }
 
 /**
@@ -80,27 +124,27 @@ function getPreviewText(content) {
  */
 async function loadRecordings() {
   try {
-    loadingIndicator.style.display = 'block';
-    recordingList.style.display = 'none';
-    emptyState.style.display = 'none';
+    loadingIndicator.style.display = DISPLAY.BLOCK;
+    recordingList.style.display = DISPLAY.NONE;
+    emptyState.style.display = DISPLAY.NONE;
 
     const recordings = await window.electronAPI.getRecordings();
     allRecordings = recordings;
     filteredRecordings = recordings;
 
     if (recordings.length === 0) {
-      loadingIndicator.style.display = 'none';
-      emptyState.style.display = 'block';
+      loadingIndicator.style.display = DISPLAY.NONE;
+      emptyState.style.display = DISPLAY.BLOCK;
     } else {
       renderRecordings(recordings);
-      loadingIndicator.style.display = 'none';
-      recordingList.style.display = 'block';
+      loadingIndicator.style.display = DISPLAY.NONE;
+      recordingList.style.display = DISPLAY.BLOCK;
     }
   } catch (error) {
     console.error('Error loading recordings:', error);
-    showToast('Error loading recordings', 'error');
-    loadingIndicator.style.display = 'none';
-    emptyState.style.display = 'block';
+    showToast(MESSAGES.LOAD_ERROR, 'error');
+    loadingIndicator.style.display = DISPLAY.NONE;
+    emptyState.style.display = DISPLAY.BLOCK;
   }
 }
 
@@ -112,13 +156,13 @@ function renderRecordings(recordings) {
   recordingList.innerHTML = '';
 
   if (recordings.length === 0) {
-    recordingList.style.display = 'none';
-    emptyState.style.display = 'block';
+    recordingList.style.display = DISPLAY.NONE;
+    emptyState.style.display = DISPLAY.BLOCK;
     return;
   }
 
-  recordingList.style.display = 'block';
-  emptyState.style.display = 'none';
+  recordingList.style.display = DISPLAY.BLOCK;
+  emptyState.style.display = DISPLAY.NONE;
 
   recordings.forEach(recording => {
     const item = createRecordingItem(recording);
@@ -133,42 +177,42 @@ function renderRecordings(recordings) {
  */
 function createRecordingItem(recording) {
   const div = document.createElement('div');
-  div.className = 'recording-item';
+  div.className = CSS_CLASSES.RECORDING_ITEM;
 
   const header = document.createElement('div');
-  header.className = 'recording-header';
+  header.className = CSS_CLASSES.RECORDING_HEADER;
 
   const date = document.createElement('div');
-  date.className = 'recording-date';
+  date.className = CSS_CLASSES.RECORDING_DATE;
   date.textContent = formatDate(recording.timestamp);
 
   const duration = document.createElement('div');
-  duration.className = 'recording-duration';
-  duration.textContent = recording.duration || 'Unknown';
+  duration.className = CSS_CLASSES.RECORDING_DURATION;
+  duration.textContent = recording.duration || DURATION.UNKNOWN_LABEL;
 
   header.appendChild(date);
   header.appendChild(duration);
 
   const preview = document.createElement('div');
-  preview.className = 'recording-preview';
+  preview.className = CSS_CLASSES.RECORDING_PREVIEW;
   preview.textContent = recording.preview;
 
   const actions = document.createElement('div');
-  actions.className = 'recording-actions';
+  actions.className = CSS_CLASSES.RECORDING_ACTIONS;
 
   const playBtn = document.createElement('button');
-  playBtn.className = 'action-btn play';
-  playBtn.innerHTML = '<span>▶</span><span>Play</span>';
+  playBtn.className = `${CSS_CLASSES.ACTION_BTN} ${CSS_CLASSES.ACTION_BTN_PLAY}`;
+  playBtn.innerHTML = BUTTON_CONTENT.PLAY;
   playBtn.onclick = () => playRecording(recording.audioPath);
 
   const viewBtn = document.createElement('button');
-  viewBtn.className = 'action-btn';
-  viewBtn.innerHTML = '<span>📄</span><span>View</span>';
+  viewBtn.className = CSS_CLASSES.ACTION_BTN;
+  viewBtn.innerHTML = BUTTON_CONTENT.VIEW;
   viewBtn.onclick = () => viewTranscript(recording.transcriptPath);
 
   const copyBtn = document.createElement('button');
-  copyBtn.className = 'action-btn copy';
-  copyBtn.innerHTML = '<span>📋</span><span>Copy</span>';
+  copyBtn.className = `${CSS_CLASSES.ACTION_BTN} ${CSS_CLASSES.ACTION_BTN_COPY}`;
+  copyBtn.innerHTML = BUTTON_CONTENT.COPY;
   copyBtn.onclick = () => copyTranscript(recording.transcriptPath);
 
   actions.appendChild(playBtn);
@@ -207,12 +251,12 @@ async function copyTranscript(transcriptPath) {
     const content = await window.electronAPI.readFile(transcriptPath);
 
     // Extract just the transcript text (skip metadata)
-    const lines = content.split('\n');
+    const lines = content.split(MARKDOWN.LINE_SEPARATOR);
     let transcriptStarted = false;
     let transcriptText = [];
 
     for (let line of lines) {
-      if (line.trim() === '---') {
+      if (line.trim() === MARKDOWN.SEPARATOR) {
         transcriptStarted = true;
         continue;
       }
@@ -221,12 +265,12 @@ async function copyTranscript(transcriptPath) {
       }
     }
 
-    const textToCopy = transcriptText.join('\n').trim();
+    const textToCopy = transcriptText.join(MARKDOWN.LINE_SEPARATOR).trim();
     await navigator.clipboard.writeText(textToCopy);
-    showToast('Copied to clipboard!');
+    showToast(MESSAGES.COPY_SUCCESS);
   } catch (error) {
     console.error('Error copying transcript:', error);
-    showToast('Failed to copy transcript', 'error');
+    showToast(MESSAGES.COPY_ERROR, 'error');
   }
 }
 
@@ -237,12 +281,12 @@ async function copyTranscript(transcriptPath) {
  */
 function showToast(message, type = 'success') {
   toast.textContent = message;
-  toast.style.background = type === 'error' ? '#f44336' : '#4caf50';
-  toast.classList.add('show');
+  toast.style.background = type === 'error' ? TOAST.COLOR_ERROR : TOAST.COLOR_SUCCESS;
+  toast.classList.add(CSS_CLASSES.SHOW);
 
   setTimeout(() => {
-    toast.classList.remove('show');
-  }, 3000);
+    toast.classList.remove(CSS_CLASSES.SHOW);
+  }, TOAST.DURATION_MS);
 }
 
 /**

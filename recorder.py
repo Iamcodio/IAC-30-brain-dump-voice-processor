@@ -41,6 +41,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src', 'python'))
 
 from core.error_handler import error_handler, ErrorLevel  # noqa: E402
 from core.validators import FileValidator  # noqa: E402
+from config.settings import AUDIO, PATHS, PROTOCOL  # noqa: E402
 
 
 class SimpleRecorder:
@@ -79,7 +80,9 @@ class SimpleRecorder:
         self.audio: Optional[pyaudio.PyAudio] = None
         self.stream: Optional[pyaudio.Stream] = None
         # Output to project folder, not ~/09-personal
-        self.output_dir: str = os.path.join(os.path.dirname(__file__), "outputs", "audio")
+        self.output_dir: str = os.path.join(
+            os.path.dirname(__file__), PATHS.OUTPUTS_DIR, PATHS.AUDIO_SUBDIR
+        )
 
         try:
             # Validate and create output directory
@@ -127,11 +130,11 @@ class SimpleRecorder:
             if self.recording and in_data:
                 self.frames.append(in_data)
 
-            return (in_data, pyaudio.paContinue)
+            return (in_data, AUDIO.STREAM_CONTINUE)
 
         except Exception as e:
             error_handler.handle_exception("SimpleRecorder.audio_callback", e)
-            return (None, pyaudio.paAbort)
+            return (None, AUDIO.STREAM_ABORT)
 
     def start(self) -> None:
         """
@@ -167,18 +170,18 @@ class SimpleRecorder:
             self.frames = []
             self.stream = self.audio.open(
                 format=pyaudio.paInt16,
-                channels=1,
-                rate=44100,
+                channels=AUDIO.CHANNELS,
+                rate=AUDIO.SAMPLE_RATE,
                 input=True,
-                frames_per_buffer=1024,
+                frames_per_buffer=AUDIO.FRAMES_PER_BUFFER,
                 stream_callback=self.audio_callback
             )
-            print("RECORDING_STARTED", flush=True)
+            print(PROTOCOL.EVENT_RECORDING_STARTED, flush=True)
 
         except Exception as e:
             self.recording = False
             error_handler.handle_exception("SimpleRecorder.start", e)
-            print("ERROR:RecordingStartFailed", flush=True)
+            print(PROTOCOL.ERROR_RECORDING_START_FAILED, flush=True)
 
     def stop(self) -> None:
         """Stop audio recording and save file."""
@@ -201,7 +204,7 @@ class SimpleRecorder:
 
             if self.frames:
                 filename = self.save_wav()
-                print(f"RECORDING_STOPPED:{filename}", flush=True)
+                print(f"{PROTOCOL.EVENT_RECORDING_STOPPED}:{filename}", flush=True)
             else:
                 error_handler.notify(
                     ErrorLevel.WARNING,
@@ -209,17 +212,17 @@ class SimpleRecorder:
                     "NoAudioData",
                     "No audio data captured"
                 )
-                print("RECORDING_STOPPED:no_audio", flush=True)
+                print(f"{PROTOCOL.EVENT_RECORDING_STOPPED}:{PROTOCOL.NO_AUDIO_MARKER}", flush=True)
 
         except Exception as e:
             error_handler.handle_exception("SimpleRecorder.stop", e)
-            print("ERROR:RecordingStopFailed", flush=True)
+            print(PROTOCOL.ERROR_RECORDING_STOP_FAILED, flush=True)
 
     def save_wav(self) -> str:
         """Save recorded frames to WAV file."""
         try:
-            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            filename = f"recording_{timestamp}.wav"
+            timestamp = datetime.now().strftime(PATHS.RECORDING_TIMESTAMP_FORMAT)
+            filename = f"{PATHS.RECORDING_PREFIX}{timestamp}{PATHS.AUDIO_EXTENSION}"
             filepath = os.path.join(self.output_dir, filename)
 
             # Validate output path
@@ -227,9 +230,9 @@ class SimpleRecorder:
 
             # Write WAV file
             wf = wave.open(filepath, 'wb')
-            wf.setnchannels(1)
-            wf.setsampwidth(2)
-            wf.setframerate(44100)
+            wf.setnchannels(AUDIO.CHANNELS)
+            wf.setsampwidth(AUDIO.SAMPLE_WIDTH)
+            wf.setframerate(AUDIO.SAMPLE_RATE)
             wf.writeframes(b''.join(self.frames))
             wf.close()
 
@@ -245,17 +248,17 @@ class SimpleRecorder:
     def run(self) -> None:
         """Main event loop listening for stdin commands."""
         try:
-            print("READY", flush=True)
+            print(PROTOCOL.EVENT_READY, flush=True)
 
             for line in sys.stdin:
                 try:
                     command = line.strip()
 
-                    if command == "start":
+                    if command == PROTOCOL.CMD_START:
                         self.start()
-                    elif command == "stop":
+                    elif command == PROTOCOL.CMD_STOP:
                         self.stop()
-                    elif command == "quit":
+                    elif command == PROTOCOL.CMD_QUIT:
                         self.cleanup()
                         break
                     else:

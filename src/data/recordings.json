@@ -105,6 +105,19 @@
         "model": "whisper-base",
         "language": "en"
       }
+    },
+    {
+      "id": "rec_1761402781128",
+      "timestamp": "2025-10-25T14:33:01.128Z",
+      "duration": 7,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_15-32-59.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_153259.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_153259.md",
+      "firstLine": "How oldly doodly doodly how oldly doodly doodly? I'm eating my dinner",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
     }
   ]
 }

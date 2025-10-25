@@ -5,6 +5,20 @@ const fs = require('fs');
 const Database = require('./database.js');
 const { ProcessManager } = require('./src/js/process_manager');
 const { errorHandler, ErrorLevel } = require('./src/js/error_handler');
+const { FileValidator } = require('./src/js/utils/file_validator.js');
+const {
+  WINDOW_CONFIG,
+  PATHS,
+  PROCESS_CONFIG,
+  PROTOCOL,
+  SHORTCUTS,
+  PLATFORM,
+  EXIT_CODES,
+  ERROR_TYPES,
+  CONTEXTS,
+  SPAWN_COMMANDS,
+  FILE_OPS
+} = require('./src/config/constants.js');
 
 let mainWindow;
 let recorderManager;
@@ -13,43 +27,26 @@ let db;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: WINDOW_CONFIG.WIDTH,
+    height: WINDOW_CONFIG.HEIGHT,
     webPreferences: {
-      preload: path.join(__dirname, 'src', 'preload.js'),
-      nodeIntegration: false,
-      contextIsolation: true
+      preload: path.join(__dirname, PATHS.PRELOAD_SCRIPT),
+      nodeIntegration: WINDOW_CONFIG.NODE_INTEGRATION,
+      contextIsolation: WINDOW_CONFIG.CONTEXT_ISOLATION
     }
   });
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile(PATHS.INDEX_HTML);
   startRecorderProcess();
 }
 
 function startRecorderProcess() {
   try {
-    const pythonPath = path.join(__dirname, '.venv', 'bin', 'python');
-    const scriptPath = path.join(__dirname, 'recorder.py');
+    const pythonPath = path.join(__dirname, PATHS.PYTHON_VENV);
+    const scriptPath = path.join(__dirname, PATHS.RECORDER_SCRIPT);
 
     // Validate paths exist
-    if (!fs.existsSync(pythonPath)) {
-      errorHandler.notify(
-        ErrorLevel.CRITICAL,
-        'startRecorderProcess',
-        'PythonNotFound',
-        `Python not found at ${pythonPath}`
-      );
-      throw new Error(`Python not found: ${pythonPath}`);
-    }
-
-    if (!fs.existsSync(scriptPath)) {
-      errorHandler.notify(
-        ErrorLevel.CRITICAL,
-        'startRecorderProcess',
-        'ScriptNotFound',
-        `Recorder script not found at ${scriptPath}`
-      );
-      throw new Error(`Recorder script not found: ${scriptPath}`);
-    }
+    FileValidator.validateExistsWithLevel(pythonPath, CONTEXTS.START_RECORDER, ErrorLevel.CRITICAL);
+    FileValidator.validateExistsWithLevel(scriptPath, CONTEXTS.START_RECORDER, ErrorLevel.CRITICAL);
 
     // Create process manager for recorder
     recorderManager = new ProcessManager({
@@ -57,8 +54,8 @@ function startRecorderProcess() {
       command: pythonPath,
       args: [scriptPath],
       cwd: __dirname,
-      maxRestarts: 5,
-      baseDelay: 1000
+      maxRestarts: PROCESS_CONFIG.MAX_RESTARTS,
+      baseDelay: PROCESS_CONFIG.BASE_DELAY_MS
     });
 
     // Handle stdout messages
@@ -67,37 +64,37 @@ function startRecorderProcess() {
       console.log('Python:', output);
 
       try {
-        if (output === 'READY') {
+        if (output === PROTOCOL.READY) {
           errorHandler.notify(
             ErrorLevel.INFO,
-            'recorder.stdout',
-            'RecorderReady',
+            CONTEXTS.RECORDER_STDOUT,
+            ERROR_TYPES.RECORDER_READY,
             'Recorder process ready'
           );
           // Reset restart count on successful READY
           recorderManager.resetRestartCount();
-        } else if (output === 'RECORDING_STARTED') {
+        } else if (output === PROTOCOL.RECORDING_STARTED) {
           mainWindow.webContents.send('recording-started');
-        } else if (output.startsWith('RECORDING_STOPPED:')) {
+        } else if (output.startsWith(PROTOCOL.RECORDING_STOPPED)) {
           const filename = output.split(':')[1];
-          if (filename && filename !== 'no_audio') {
+          if (filename && filename !== PROTOCOL.NO_AUDIO_CAPTURED) {
             console.log('Saved:', filename);
             mainWindow.webContents.send('recording-stopped');
             transcribeAudio(filename);
           } else {
             errorHandler.notify(
               ErrorLevel.WARNING,
-              'recorder.stdout',
-              'NoAudioRecorded',
+              CONTEXTS.RECORDER_STDOUT,
+              ERROR_TYPES.NO_AUDIO_RECORDED,
               'Recording stopped but no audio captured'
             );
             mainWindow.webContents.send('recording-stopped');
           }
-        } else if (output.startsWith('ERROR:')) {
+        } else if (output.startsWith(PROTOCOL.ERROR_PREFIX)) {
           errorHandler.notify(
             ErrorLevel.ERROR,
-            'recorder.stdout',
-            'RecorderError',
+            CONTEXTS.RECORDER_STDOUT,
+            ERROR_TYPES.RECORDER_ERROR,
             output
           );
           mainWindow.webContents.send('recording-error', output);
@@ -118,8 +115,8 @@ function startRecorderProcess() {
     recorderManager.on('error', (error) => {
       errorHandler.notify(
         ErrorLevel.ERROR,
-        'recorder.process',
-        'ProcessError',
+        CONTEXTS.RECORDER_PROCESS,
+        ERROR_TYPES.PROCESS_ERROR,
         `Recorder process error: ${error.message}`
       );
       mainWindow.webContents.send('recorder-error', error.message);
@@ -129,9 +126,9 @@ function startRecorderProcess() {
     recorderManager.on('restarting', (count, delay) => {
       errorHandler.notify(
         ErrorLevel.WARNING,
-        'recorder.process',
-        'ProcessRestarting',
-        `Recorder restarting (attempt ${count}/5) in ${delay}ms`
+        CONTEXTS.RECORDER_PROCESS,
+        ERROR_TYPES.PROCESS_RESTARTING,
+        `Recorder restarting (attempt ${count}/${PROCESS_CONFIG.MAX_RESTARTS}) in ${delay}ms`
       );
       mainWindow.webContents.send('recorder-restarting', { count, delay });
     });
@@ -140,8 +137,8 @@ function startRecorderProcess() {
     recorderManager.on('failed', () => {
       errorHandler.notify(
         ErrorLevel.CRITICAL,
-        'recorder.process',
-        'ProcessFailed',
+        CONTEXTS.RECORDER_PROCESS,
+        ERROR_TYPES.PROCESS_FAILED,
         'Recorder failed after maximum restart attempts'
       );
       mainWindow.webContents.send('recorder-failed');
@@ -151,20 +148,16 @@ function startRecorderProcess() {
     recorderManager.start();
 
   } catch (error) {
-    errorHandler.handleException('startRecorderProcess', error, true);
+    errorHandler.handleException(CONTEXTS.START_RECORDER, error, true);
   }
 }
 
 function transcribeAudio(audioPath) {
   try {
     // Validate audio file exists
-    if (!fs.existsSync(audioPath)) {
-      errorHandler.notify(
-        ErrorLevel.ERROR,
-        'transcribeAudio',
-        'FileNotFound',
-        `Audio file not found: ${audioPath}`
-      );
+    try {
+      FileValidator.validateExists(audioPath, CONTEXTS.TRANSCRIBE_AUDIO);
+    } catch (error) {
       mainWindow.webContents.send('transcription-error', 'Audio file not found');
       return;
     }
@@ -172,8 +165,8 @@ function transcribeAudio(audioPath) {
     console.log('Starting transcription:', audioPath);
     mainWindow.webContents.send('transcription-started');
 
-    const pythonPath = path.join(__dirname, '.venv', 'bin', 'python');
-    const scriptPath = path.join(__dirname, 'transcribe.py');
+    const pythonPath = path.join(__dirname, PATHS.PYTHON_VENV);
+    const scriptPath = path.join(__dirname, PATHS.TRANSCRIBER_SCRIPT);
 
     const transcriber = spawn(pythonPath, [scriptPath, audioPath]);
 
@@ -182,19 +175,19 @@ function transcribeAudio(audioPath) {
       console.log('Transcription:', output);
 
       // Handle protocol messages
-      if (output.startsWith('TRANSCRIPT_SAVED:')) {
+      if (output.startsWith(PROTOCOL.TRANSCRIPT_SAVED)) {
         const mdPath = output.split(':')[1];
         errorHandler.notify(
           ErrorLevel.INFO,
-          'transcribeAudio',
-          'TranscriptSaved',
+          CONTEXTS.TRANSCRIBE_AUDIO,
+          ERROR_TYPES.TRANSCRIPT_SAVED,
           `Transcript saved: ${mdPath}`
         );
-      } else if (output.startsWith('ERROR:')) {
+      } else if (output.startsWith(PROTOCOL.ERROR_PREFIX)) {
         errorHandler.notify(
           ErrorLevel.ERROR,
-          'transcribeAudio.stdout',
-          'TranscriptionError',
+          CONTEXTS.TRANSCRIBE_STDOUT,
+          ERROR_TYPES.TRANSCRIPTION_ERROR,
           output
         );
         mainWindow.webContents.send('transcription-error', output);
@@ -208,24 +201,24 @@ function transcribeAudio(audioPath) {
     });
 
     transcriber.on('error', (error) => {
-      errorHandler.handleException('transcribeAudio.spawn', error);
+      errorHandler.handleException(CONTEXTS.TRANSCRIBE_SPAWN, error);
       mainWindow.webContents.send('transcription-error', error.message);
     });
 
     transcriber.on('close', (code) => {
-      if (code === 0) {
+      if (code === EXIT_CODES.SUCCESS) {
         errorHandler.notify(
           ErrorLevel.INFO,
-          'transcribeAudio',
-          'TranscriptionComplete',
+          CONTEXTS.TRANSCRIBE_AUDIO,
+          ERROR_TYPES.TRANSCRIPTION_COMPLETE,
           'Transcription completed successfully'
         );
         mainWindow.webContents.send('transcription-complete');
       } else {
         errorHandler.notify(
           ErrorLevel.ERROR,
-          'transcribeAudio',
-          'TranscriptionFailed',
+          CONTEXTS.TRANSCRIBE_AUDIO,
+          ERROR_TYPES.TRANSCRIPTION_FAILED,
           `Transcription failed with exit code ${code}`
         );
         mainWindow.webContents.send('transcription-error', `Exit code ${code}`);
@@ -233,7 +226,7 @@ function transcribeAudio(audioPath) {
     });
 
   } catch (error) {
-    errorHandler.handleException('transcribeAudio', error);
+    errorHandler.handleException(CONTEXTS.TRANSCRIBE_AUDIO, error);
     mainWindow.webContents.send('transcription-error', error.message);
   }
 }
@@ -244,8 +237,8 @@ app.whenReady().then(() => {
 
   createWindow();
 
-  const ret = globalShortcut.register('Control+Y', () => {
-    console.log('Hotkey pressed: Control+Y');
+  const ret = globalShortcut.register(SHORTCUTS.TOGGLE_RECORDING, () => {
+    console.log(`Hotkey pressed: ${SHORTCUTS.TOGGLE_RECORDING}`);
     if (isRecording) {
       stopRecording();
     } else {
@@ -267,7 +260,7 @@ app.on('will-quit', () => {
     }
 
   } catch (error) {
-    errorHandler.handleException('app.will-quit', error);
+    errorHandler.handleException(CONTEXTS.APP_WILL_QUIT, error);
   }
 });
 
@@ -276,8 +269,8 @@ function startRecording() {
     if (!recorderManager || !recorderManager.isRunning) {
       errorHandler.notify(
         ErrorLevel.ERROR,
-        'startRecording',
-        'RecorderNotReady',
+        CONTEXTS.START_RECORDING,
+        ERROR_TYPES.RECORDER_NOT_READY,
         'Recorder process not running'
       );
       mainWindow.webContents.send('recording-error', 'Recorder not ready');
@@ -287,17 +280,17 @@ function startRecording() {
     isRecording = true;
     console.log('Sending start command to Python');
 
-    if (!recorderManager.send('start\n')) {
+    if (!recorderManager.send(PROTOCOL.CMD_START)) {
       errorHandler.notify(
         ErrorLevel.ERROR,
-        'startRecording',
-        'SendFailed',
+        CONTEXTS.START_RECORDING,
+        ERROR_TYPES.SEND_FAILED,
         'Failed to send start command to recorder'
       );
       isRecording = false;
     }
   } catch (error) {
-    errorHandler.handleException('startRecording', error);
+    errorHandler.handleException(CONTEXTS.START_RECORDING, error);
     isRecording = false;
   }
 }
@@ -307,8 +300,8 @@ function stopRecording() {
     if (!recorderManager || !recorderManager.isRunning) {
       errorHandler.notify(
         ErrorLevel.WARNING,
-        'stopRecording',
-        'RecorderNotReady',
+        CONTEXTS.STOP_RECORDING,
+        ERROR_TYPES.RECORDER_NOT_READY,
         'Recorder process not running'
       );
       isRecording = false;
@@ -318,16 +311,16 @@ function stopRecording() {
     isRecording = false;
     console.log('Sending stop command to Python');
 
-    if (!recorderManager.send('stop\n')) {
+    if (!recorderManager.send(PROTOCOL.CMD_STOP)) {
       errorHandler.notify(
         ErrorLevel.ERROR,
-        'stopRecording',
-        'SendFailed',
+        CONTEXTS.STOP_RECORDING,
+        ERROR_TYPES.SEND_FAILED,
         'Failed to send stop command to recorder'
       );
     }
   } catch (error) {
-    errorHandler.handleException('stopRecording', error);
+    errorHandler.handleException(CONTEXTS.STOP_RECORDING, error);
     isRecording = false;
   }
 }
@@ -344,7 +337,7 @@ ipcMain.handle('get-recordings', async () => {
     }
     return db.getAll();
   } catch (error) {
-    errorHandler.handleException('ipc.get-recordings', error);
+    errorHandler.handleException(CONTEXTS.IPC_GET_RECORDINGS, error);
     return [];
   }
 });
@@ -359,7 +352,7 @@ ipcMain.handle('search-recordings', async (event, query) => {
     }
     return db.search(query);
   } catch (error) {
-    errorHandler.handleException('ipc.search-recordings', error);
+    errorHandler.handleException(CONTEXTS.IPC_SEARCH_RECORDINGS, error);
     return [];
   }
 });
@@ -369,20 +362,12 @@ ipcMain.handle('search-recordings', async (event, query) => {
  */
 ipcMain.handle('read-file', async (event, filePath) => {
   try {
-    // Validate file exists
-    if (!fs.existsSync(filePath)) {
-      throw new Error(`File not found: ${filePath}`);
-    }
+    // Validate file exists and has no path traversal
+    FileValidator.validateSafe(filePath, CONTEXTS.IPC_READ_FILE);
 
-    // Validate file is within project directory (basic path traversal check)
-    const normalizedPath = path.normalize(filePath);
-    if (normalizedPath.includes('..')) {
-      throw new Error('Invalid file path');
-    }
-
-    return fs.readFileSync(filePath, 'utf-8');
+    return fs.readFileSync(filePath, FILE_OPS.ENCODING);
   } catch (error) {
-    errorHandler.handleException('ipc.read-file', error);
+    errorHandler.handleException(CONTEXTS.IPC_READ_FILE, error);
     throw error;
   }
 });
@@ -393,23 +378,19 @@ ipcMain.handle('read-file', async (event, filePath) => {
 ipcMain.on('play-audio', (event, audioPath) => {
   try {
     // Validate file exists
-    if (!fs.existsSync(audioPath)) {
-      errorHandler.notify(
-        ErrorLevel.ERROR,
-        'ipc.play-audio',
-        'FileNotFound',
-        `Audio file not found: ${audioPath}`
-      );
+    try {
+      FileValidator.validateExists(audioPath, CONTEXTS.IPC_PLAY_AUDIO);
+    } catch (error) {
       return;
     }
 
-    if (process.platform === 'darwin') {
-      spawn('open', ['-a', 'QuickTime Player', audioPath]);
+    if (process.platform === PLATFORM.DARWIN) {
+      spawn(SPAWN_COMMANDS.MACOS_OPEN, [SPAWN_COMMANDS.MACOS_OPEN_APP_FLAG, PLATFORM.AUDIO_PLAYER_MACOS, audioPath]);
     } else {
       shell.openPath(audioPath);
     }
   } catch (error) {
-    errorHandler.handleException('ipc.play-audio', error);
+    errorHandler.handleException(CONTEXTS.IPC_PLAY_AUDIO, error);
   }
 });
 
@@ -419,19 +400,15 @@ ipcMain.on('play-audio', (event, audioPath) => {
 ipcMain.on('view-file', (event, filePath) => {
   try {
     // Validate file exists
-    if (!fs.existsSync(filePath)) {
-      errorHandler.notify(
-        ErrorLevel.ERROR,
-        'ipc.view-file',
-        'FileNotFound',
-        `File not found: ${filePath}`
-      );
+    try {
+      FileValidator.validateExists(filePath, CONTEXTS.IPC_VIEW_FILE);
+    } catch (error) {
       return;
     }
 
     shell.openPath(filePath);
   } catch (error) {
-    errorHandler.handleException('ipc.view-file', error);
+    errorHandler.handleException(CONTEXTS.IPC_VIEW_FILE, error);
   }
 });
 
@@ -440,9 +417,9 @@ ipcMain.on('view-file', (event, filePath) => {
  */
 ipcMain.on('show-history', () => {
   try {
-    mainWindow.loadFile('history.html');
+    mainWindow.loadFile(PATHS.HISTORY_HTML);
   } catch (error) {
-    errorHandler.handleException('ipc.show-history', error);
+    errorHandler.handleException(CONTEXTS.IPC_SHOW_HISTORY, error);
   }
 });
 
@@ -451,8 +428,8 @@ ipcMain.on('show-history', () => {
  */
 ipcMain.on('show-recorder', () => {
   try {
-    mainWindow.loadFile('index.html');
+    mainWindow.loadFile(PATHS.INDEX_HTML);
   } catch (error) {
-    errorHandler.handleException('ipc.show-recorder', error);
+    errorHandler.handleException(CONTEXTS.IPC_SHOW_RECORDER, error);
   }
 });

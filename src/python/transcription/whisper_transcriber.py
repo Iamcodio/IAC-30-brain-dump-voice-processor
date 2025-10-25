@@ -29,13 +29,14 @@ import sys
 import subprocess
 from pathlib import Path
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Optional
 
 # Add src to path for core module imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', 'src', 'python'))
 
 from core.error_handler import error_handler, ErrorLevel  # noqa: E402
 from core.validators import FileValidator, ValidationError  # noqa: E402
+from config.settings import DATABASE, MARKDOWN, PATHS, TRANSCRIPTION  # noqa: E402
 
 
 class WhisperTranscriber:
@@ -51,7 +52,7 @@ class WhisperTranscriber:
         whisper_bin (str): Name or path to whisper-cli binary.
     """
 
-    def __init__(self, model_path: str = "models/ggml-base.bin", whisper_bin: str = "whisper-cli") -> None:
+    def __init__(self, model_path: Optional[str] = None, whisper_bin: Optional[str] = None) -> None:
         """
         Initialize the Whisper transcriber.
 
@@ -60,25 +61,25 @@ class WhisperTranscriber:
 
         Args:
             model_path (str): Path to GGML model file. Defaults to
-                "models/ggml-base.bin".
+                TRANSCRIPTION.MODEL_PATH from settings.
             whisper_bin (str): Name or path to whisper-cli binary.
-                Defaults to "whisper-cli" (assumes in PATH).
+                Defaults to TRANSCRIPTION.WHISPER_BINARY from settings.
 
         Raises:
             FileNotFoundError: If model file not found.
             SystemExit: On fatal initialization errors.
         """
-        self.model_path = model_path
-        self.whisper_bin = whisper_bin
+        self.model_path = model_path if model_path is not None else TRANSCRIPTION.MODEL_PATH
+        self.whisper_bin = whisper_bin if whisper_bin is not None else TRANSCRIPTION.WHISPER_BINARY
 
         # Validate model exists
         try:
-            if not os.path.exists(model_path):
-                raise FileNotFoundError(f"Whisper model not found: {model_path}")
+            if not os.path.exists(self.model_path):
+                raise FileNotFoundError(f"Whisper model not found: {self.model_path}")
         except Exception as e:
             error_handler.handle_exception("WhisperTranscriber.__init__", e, fatal=True)
 
-    def transcribe(self, audio_path: str, output_dir: str = "outputs/transcripts") -> Dict[str, str]:
+    def transcribe(self, audio_path: str, output_dir: Optional[str] = None) -> Dict[str, str]:
         """
         Transcribe audio file to both plain text and markdown.
 
@@ -92,7 +93,7 @@ class WhisperTranscriber:
         Args:
             audio_path (str): Path to WAV audio file to transcribe.
             output_dir (str): Directory for output files. Defaults to
-                "outputs/transcripts". Created if doesn't exist.
+                PATHS.OUTPUTS_DIR/PATHS.TRANSCRIPTS_SUBDIR. Created if doesn't exist.
 
         Returns:
             dict: Dictionary containing:
@@ -112,21 +113,23 @@ class WhisperTranscriber:
             FileValidator.validate_file_size(audio_path)
 
             # Validate and create output directory
+            if output_dir is None:
+                output_dir = os.path.join(PATHS.OUTPUTS_DIR, PATHS.TRANSCRIPTS_SUBDIR)
             output_dir_path = Path(output_dir)
             FileValidator.validate_directory_exists(str(output_dir_path), create=True)
 
-            timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-            txt_output_path = output_dir_path / f"transcript_{timestamp}.txt"
-            md_output_path = output_dir_path / f"transcript_{timestamp}.md"
+            timestamp = datetime.now().strftime(TRANSCRIPTION.TIMESTAMP_FORMAT)
+            txt_output_path = output_dir_path / f"{PATHS.TRANSCRIPT_PREFIX}{timestamp}{PATHS.TRANSCRIPT_TXT_EXTENSION}"
+            md_output_path = output_dir_path / f"{PATHS.TRANSCRIPT_PREFIX}{timestamp}{PATHS.TRANSCRIPT_MD_EXTENSION}"
 
             # Build whisper command
             cmd = [
                 self.whisper_bin,
-                "-m", self.model_path,
-                "-f", str(audio_path),
-                "-l", "en",  # Force English-only mode (prevents Irish → Welsh misdetection)
-                "-otxt",
-                "-nt"  # No timestamps in output
+                TRANSCRIPTION.FLAG_MODEL, self.model_path,
+                TRANSCRIPTION.FLAG_FILE, str(audio_path),
+                TRANSCRIPTION.FLAG_LANGUAGE, TRANSCRIPTION.LANGUAGE,  # Force English-only mode (prevents Irish → Welsh misdetection)
+                TRANSCRIPTION.FLAG_OUTPUT_TXT,
+                TRANSCRIPTION.FLAG_NO_TIMESTAMPS  # No timestamps in output
             ]
 
             # Run whisper with timeout
@@ -135,14 +138,14 @@ class WhisperTranscriber:
                     cmd,
                     capture_output=True,
                     text=True,
-                    timeout=300  # 5 minute timeout
+                    timeout=TRANSCRIPTION.TIMEOUT_SECONDS
                 )
             except subprocess.TimeoutExpired as e:
                 error_handler.notify(
                     ErrorLevel.ERROR,
                     "WhisperTranscriber.transcribe",
                     "TranscriptionTimeout",
-                    "Whisper transcription timed out after 5 minutes"
+                    f"Whisper transcription timed out after {TRANSCRIPTION.TIMEOUT_SECONDS} seconds"
                 )
                 raise RuntimeError("Whisper transcription timed out") from e
 
@@ -156,7 +159,7 @@ class WhisperTranscriber:
                 raise RuntimeError(f"Whisper failed: {result.stderr}")
 
             # Whisper creates a .txt file next to the audio file
-            temp_txt_file = Path(str(audio_path) + ".txt")
+            temp_txt_file = Path(str(audio_path) + PATHS.WHISPER_TEMP_EXTENSION)
             if not temp_txt_file.exists():
                 error_handler.notify(
                     ErrorLevel.ERROR,
@@ -181,10 +184,10 @@ class WhisperTranscriber:
             txt_output_path.write_text(raw_content)
 
             # Create markdown with headers
-            markdown = "# Brain Dump Transcript\n\n"
-            markdown += f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-            markdown += f"**Audio File:** {Path(audio_path).name}\n\n"
-            markdown += "---\n\n"
+            markdown = MARKDOWN.TITLE + MARKDOWN.DOUBLE_NEWLINE
+            markdown += f"{MARKDOWN.DATE_LABEL} {datetime.now().strftime(DATABASE.TIMESTAMP_FORMAT)}" + MARKDOWN.DOUBLE_NEWLINE
+            markdown += f"{MARKDOWN.AUDIO_FILE_LABEL} {Path(audio_path).name}" + MARKDOWN.DOUBLE_NEWLINE
+            markdown += MARKDOWN.SEPARATOR + MARKDOWN.DOUBLE_NEWLINE
             markdown += raw_content
 
             # Save markdown file
