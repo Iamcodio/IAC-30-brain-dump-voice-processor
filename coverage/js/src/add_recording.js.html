@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">87.5% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>14/16</span>
+                <span class='fraction'>0/16</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>3/3</span>
+                <span class='fraction'>0/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">87.5% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>14/16</span>
+                <span class='fraction'>0/16</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -109,30 +109,30 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -142,37 +142,37 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">#!/usr/bin/env node
 /**
  * Helper script to add a recording to the database from Python
  * Reads JSON from stdin and adds it to the database
  */
 &nbsp;
-const database = require('./database');
+const database = <span class="cstat-no" title="statement not covered" >require('./database');</span>
 &nbsp;
-async function main() {
-  try {
+async function <span class="fstat-no" title="function not covered" >main(</span>) {
+<span class="cstat-no" title="statement not covered" >  try {</span>
     // Read JSON from stdin
-    let inputData = '';
+    let inputData = <span class="cstat-no" title="statement not covered" >'';</span>
 &nbsp;
-    process.stdin.on('data', chunk =&gt; {
-      inputData += chunk.toString();
+<span class="cstat-no" title="statement not covered" >    process.stdin.on('data', <span class="fstat-no" title="function not covered" >ch</span>unk =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      inputData += chunk.toString();</span>
     });
 &nbsp;
-    process.stdin.on('end', async () =&gt; {
-      try {
-        const recordingData = JSON.parse(inputData);
+<span class="cstat-no" title="statement not covered" >    process.stdin.on('end', <span class="fstat-no" title="function not covered" >as</span>ync () =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      try {</span>
+        const recordingData = <span class="cstat-no" title="statement not covered" >JSON.parse(inputData);</span>
 &nbsp;
         // Add to database
-        const result = await database.add(recordingData);
+        const result = <span class="cstat-no" title="statement not covered" >await database.add(recordingData);</span>
 &nbsp;
         // Output success
-        console.log(JSON.stringify({ success: true, recording: result }));
-        process.exit(0);
+<span class="cstat-no" title="statement not covered" >        console.log(JSON.stringify({ success: true, recording: result }));</span>
+<span class="cstat-no" title="statement not covered" >        process.exit(0);</span>
       } catch (error) {
-        console.error(JSON.stringify({ success: false, error: error.message }));
-        process.exit(1);
+<span class="cstat-no" title="statement not covered" >        console.error(JSON.stringify({ success: false, error: error.message }));</span>
+<span class="cstat-no" title="statement not covered" >        process.exit(1);</span>
       }
     });
 &nbsp;
@@ -182,7 +182,7 @@ async function main() {
   }
 }
 &nbsp;
-main();
+<span class="cstat-no" title="statement not covered" >main();</span>
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -190,7 +190,7 @@ main();
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-25T14:16:39.717Z
+                at 2025-10-25T23:57:57.713Z
             </div>
         <script src="../prettify.js"></script>
         <script>

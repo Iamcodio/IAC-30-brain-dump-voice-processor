@@ -1,9 +1,16 @@
 # Phase B Execution Plan: Production Refactor
 
-**Version:** v2.2.0  
-**Current:** v2.1.0 (Phase A complete)  
-**Timeline:** 35-50 hours  
-**Date:** 2025-10-25 14:17 IST  
+**Plan Version:** v2.0  
+**Plan Updated:** 2025-10-25 17:45 IST  
+**Updated By:** Claude (Sonnet 4.5)  
+**Changes in v2:** Added TypeScript migration to Stage 4 (B.4) - increases stability, catches bugs at compile time, prevents crashes
+
+---
+
+**Target App Version:** v3.0.0  
+**Current App Version:** v2.1.0 (Phase A complete)  
+**Timeline:** 41-57 hours  
+**Original Plan Date:** 2025-10-25 14:17 IST  
 
 ---
 
@@ -48,11 +55,22 @@ Do this once, do it right.
 - Performance benchmarks
 - Security audit
 
-### Stage 4: Production (10-15h)
+### Stage 4: Production Hardening (15-22h)
 - Structured logging
 - Metrics collection
 - Config management
 - Error tracking
+- **TypeScript migration (6-7h)**
+  - Converts JavaScript to TypeScript
+  - Catches bugs at compile time (no runtime surprises)
+  - Prevents entire categories of crashes:
+    - Type mismatches (passing wrong data)
+    - Null/undefined errors (forced to handle)
+    - Missing properties (caught before deployment)
+    - Function signature errors (wrong parameters)
+  - IDE autocomplete = less cognitive load
+  - Safe refactoring (compiler finds all usages)
+  - **Result: More stable, crashes less, catches errors early**
 
 ### Stage 5: DevEx (5-8h)
 - Developer docs
@@ -85,11 +103,17 @@ Target: v2.2.0 (production-grade code)
    - Performance benchmarks
    - Security audit
 
-4. Production
+4. Production Hardening
    - Structured logging (JSON, rotating)
    - Metrics (Prometheus format)
    - Config management
    - Error tracking
+   - TypeScript migration
+     - Compile-time type safety
+     - Prevents runtime crashes
+     - Catches null/undefined bugs
+     - IDE support & autocomplete
+     - Safe refactoring with compiler validation
 
 5. Documentation
    - Update all docs

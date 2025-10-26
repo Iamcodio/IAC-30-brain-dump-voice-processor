@@ -5,6 +5,7 @@
 
 const fs = require('fs').promises;
 const path = require('path');
+const metrics = require('./utils/metrics');
 
 const DB_PATH = path.join(__dirname, 'data', 'recordings.json');
 
@@ -42,10 +43,13 @@ async function writeDB(db) {
  * @returns {Promise<Array>} Array of recording objects
  */
 async function getAll() {
+  const end = metrics.dbQueryTime.startTimer({ operation: 'getAll' });
   const db = await readDB();
-  return db.recordings.sort((a, b) => {
+  const result = db.recordings.sort((a, b) => {
     return new Date(b.timestamp) - new Date(a.timestamp);
   });
+  end();
+  return result;
 }
 
 /**
@@ -54,6 +58,7 @@ async function getAll() {
  * @returns {Promise<Object>} The added recording with generated ID
  */
 async function add(recording) {
+  const end = metrics.dbQueryTime.startTimer({ operation: 'add' });
   const db = await readDB();
 
   // Generate ID if not provided
@@ -75,6 +80,7 @@ async function add(recording) {
   // Save to file
   await writeDB(db);
 
+  end();
   return recording;
 }
 
@@ -84,20 +90,25 @@ async function add(recording) {
  * @returns {Promise<Array>} Array of matching recordings
  */
 async function search(query) {
+  const end = metrics.dbQueryTime.startTimer({ operation: 'search' });
   const db = await readDB();
 
   if (!query || query.trim() === '') {
+    end();
     return db.recordings;
   }
 
   const lowerQuery = query.toLowerCase();
 
-  return db.recordings
+  const result = db.recordings
     .filter(recording => {
       return recording.firstLine &&
              recording.firstLine.toLowerCase().includes(lowerQuery);
     })
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  end();
+  return result;
 }
 
 /**
@@ -106,8 +117,11 @@ async function search(query) {
  * @returns {Promise<Object|null>} Recording object or null if not found
  */
 async function getById(id) {
+  const end = metrics.dbQueryTime.startTimer({ operation: 'getById' });
   const db = await readDB();
-  return db.recordings.find(recording => recording.id === id) || null;
+  const result = db.recordings.find(recording => recording.id === id) || null;
+  end();
+  return result;
 }
 
 /**
@@ -116,6 +130,7 @@ async function getById(id) {
  * @returns {Promise<boolean>} True if deleted, false if not found
  */
 async function deleteById(id) {
+  const end = metrics.dbQueryTime.startTimer({ operation: 'deleteById' });
   const db = await readDB();
   const initialLength = db.recordings.length;
 
@@ -123,9 +138,11 @@ async function deleteById(id) {
 
   if (db.recordings.length < initialLength) {
     await writeDB(db);
+    end();
     return true;
   }
 
+  end();
   return false;
 }
 
@@ -136,16 +153,19 @@ async function deleteById(id) {
  * @returns {Promise<Object|null>} Updated recording or null if not found
  */
 async function updateById(id, updates) {
+  const end = metrics.dbQueryTime.startTimer({ operation: 'updateById' });
   const db = await readDB();
   const index = db.recordings.findIndex(recording => recording.id === id);
 
   if (index === -1) {
+    end();
     return null;
   }
 
   db.recordings[index] = { ...db.recordings[index], ...updates };
   await writeDB(db);
 
+  end();
   return db.recordings[index];
 }
 

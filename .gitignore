@@ -41,3 +41,7 @@ models/*.ggml
 
 # Logs
 *.log
+logs/
+config/runtime.json
+dist/
+*.tsbuildinfo

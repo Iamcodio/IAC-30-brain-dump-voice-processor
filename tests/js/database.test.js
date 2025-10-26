@@ -5,6 +5,20 @@
 const fs = require('fs').promises;
 const path = require('path');
 
+// Mock config module FIRST (before any imports that use it)
+jest.mock('config', () => ({
+  get: jest.fn((key) => {
+    const config = {
+      'paths.databaseFile': 'src/data/recordings.json',
+      'database.jsonIndent': 2,
+      'file.encoding': 'utf-8',
+      'file.recursiveMkdir': true
+    };
+    return config[key];
+  }),
+  has: jest.fn(() => true)
+}));
+
 // Mock fs module
 jest.mock('fs', () => ({
   promises: {

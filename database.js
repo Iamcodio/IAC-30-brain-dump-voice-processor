@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
-const { errorHandler, ErrorLevel } = require('./src/js/error_handler');
+const config = require('config');
+const { errorHandler, ErrorLevel, captureError } = require('./src/js/error_handler');
 const { FileValidator } = require('./src/js/utils/file_validator.js');
 const {
-  PATHS,
   DURATION,
   DATABASE,
   MARKDOWN,
@@ -20,9 +20,9 @@ const {
 class Database {
   constructor(baseDir) {
     this.baseDir = baseDir;
-    this.dbPath = path.join(baseDir, PATHS.DATABASE_FILE);
-    this.audioDir = path.join(baseDir, PATHS.AUDIO_OUTPUT_DIR);
-    this.transcriptDir = path.join(baseDir, PATHS.TRANSCRIPT_OUTPUT_DIR);
+    this.dbPath = path.join(baseDir, config.get('paths.databaseFile'));
+    this.audioDir = path.join(baseDir, config.get('paths.audioDir'));
+    this.transcriptDir = path.join(baseDir, config.get('paths.transcriptDir'));
 
     // Validate and create database file if needed
     try {
@@ -94,6 +94,10 @@ class Database {
       return parsed;
     } catch (error) {
       errorHandler.handleException(CONTEXTS.DB_READ, error);
+      captureError(error, {
+        tags: { component: 'database', operation: 'readDB' },
+        extra: { dbPath: this.dbPath }
+      });
       return DATABASE.EMPTY_STRUCTURE;
     }
   }
@@ -126,6 +130,10 @@ class Database {
       });
     } catch (error) {
       errorHandler.handleException(CONTEXTS.DB_GET_ALL, error);
+      captureError(error, {
+        tags: { component: 'database', operation: 'getAll' },
+        extra: { dbPath: this.dbPath }
+      });
       return [];
     }
   }
@@ -280,6 +288,10 @@ class Database {
       });
     } catch (error) {
       errorHandler.handleException(CONTEXTS.DB_SEARCH, error);
+      captureError(error, {
+        tags: { component: 'database', operation: 'search' },
+        extra: { query, dbPath: this.dbPath }
+      });
       return [];
     }
   }

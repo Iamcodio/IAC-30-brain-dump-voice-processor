@@ -81,6 +81,126 @@ npm start
 
 Press **Ctrl+Y** to start/stop recording. Transcripts saved to `outputs/transcripts/`.
 
+## Configuration
+
+The application uses environment-based configuration via the `config` package. Configuration is loaded from JSON files in the `config/` directory.
+
+### Configuration Files
+
+- **`config/default.json`** - Base configuration (all environments)
+- **`config/development.json`** - Development environment overrides
+- **`config/production.json`** - Production environment overrides
+- **`config/test.json`** - Test environment overrides
+- **`config/custom-environment-variables.json`** - Environment variable mappings
+
+### Environment Variables
+
+You can override configuration values using environment variables:
+
+- **`NODE_ENV`** - Environment (development, production, test) - Default: development
+- **`LOG_LEVEL`** - Log level (debug, info, warn, error, silent) - Overrides logging.level
+- **`SENTRY_DSN`** - Sentry error tracking DSN (optional) - See Error Tracking section below
+- **`SENTRY_ENABLED`** - Enable Sentry (true/false) - Default: false
+
+### Running in Different Environments
+
+```bash
+# Development (default) - debug logging, metrics disabled
+npm start
+
+# Production - warn logging, production paths, Sentry enabled
+NODE_ENV=production npm start
+
+# Test - silent logging, test paths
+NODE_ENV=test npm start
+
+# Custom log level
+LOG_LEVEL=debug npm start
+```
+
+### Key Configuration Values
+
+```javascript
+// Paths
+paths.audioDir              // outputs/audio (dev) | /var/app/braindump/audio (prod)
+paths.transcriptDir         // outputs/transcripts (dev) | /var/app/braindump/transcripts (prod)
+paths.databaseFile          // src/data/recordings.json (dev) | /var/app/braindump/db/recordings.json (prod)
+
+// Recording
+recording.sampleRate        // 44100
+recording.channels          // 1
+recording.format            // WAV
+recording.bitDepth          // 16
+
+// Shortcuts
+shortcuts.toggleRecording   // Control+Y
+
+// Window
+window.width                // 800
+window.height               // 600
+
+// Logging
+logging.level               // info (default) | debug (dev) | warn (prod) | silent (test)
+```
+
+## Error Tracking (Optional)
+
+BrainDump supports optional error tracking via Sentry for production deployments.
+
+### Why Sentry?
+
+- **Zero errors lost in production** - Track all uncaught exceptions and promise rejections
+- **Full context** - Error breadcrumbs show user actions leading to errors
+- **Privacy-first** - Sensitive data automatically sanitized before sending
+- **Optional** - Disabled by default for local development
+
+### Setup Sentry (Optional)
+
+1. **Create a Sentry project** at https://sentry.io (free tier available)
+2. **Copy your DSN** from Project Settings → Client Keys (DSN)
+3. **Set environment variables:**
+
+```bash
+export SENTRY_ENABLED=true
+export SENTRY_DSN=https://your-key@sentry.io/project-id
+npm start
+```
+
+### Privacy Safeguards
+
+Sentry integration includes automatic data sanitization:
+
+- **File paths sanitized** - User names removed (`/Users/john/` → `/Users/REDACTED/`)
+- **No sensitive headers** - Cookies and authorization headers stripped
+- **No request data** - Only error messages and stack traces sent
+- **Breadcrumbs filtered** - User actions tracked without sensitive data
+
+### Example: Capturing Errors
+
+```javascript
+const { captureError } = require('./src/js/error_handler');
+
+try {
+  // Your code
+} catch (error) {
+  captureError(error, {
+    tags: { component: 'transcription' },
+    extra: { audioPath: '/path/to/file.wav', fileSize: 12345 },
+    level: 'error'
+  });
+}
+```
+
+### Disable Sentry
+
+Sentry is **disabled by default** for local development. To explicitly disable:
+
+```bash
+export SENTRY_ENABLED=false
+# or simply don't set it (defaults to false)
+npm start
+```
+
 ## Architecture
 
 ```
