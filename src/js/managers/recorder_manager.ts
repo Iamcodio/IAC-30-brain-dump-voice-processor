@@ -108,9 +108,11 @@ class RecorderManager {
         this.notifyUI('recording-started');
         metrics.activeRecordings.inc();
         this.recordingStartTime = Date.now();
+        this.emit('recordingStarted', null); // Emit for overlay/tray updates
       } else if (output.startsWith(config.get<string>('protocol.recordingStopped'))) {
         const filename = output.split(':')[1];
         this.notifyUI('recording-stopped');
+        this.emit('recordingStopped', null); // Emit for overlay/tray updates
 
         // Calculate recording duration for metrics
         if (this.recordingStartTime) {
@@ -141,6 +143,7 @@ class RecorderManager {
           this.recordingStartTime = null;
         }
         this.notifyUI('recording-error', output);
+        this.emit('recordingError', output); // Emit for overlay/tray updates
       }
     } catch (error) {
       errorHandler.handleException('RecorderManager.handleStdout', error as Error);
@@ -217,14 +220,23 @@ class RecorderManager {
    * @returns True if command sent successfully, false otherwise
    */
   public startRecording(): boolean {
+    console.log(`\n[RECORDER] [${new Date().toISOString()}] startRecording() CALLED`);
+    console.log(`[RECORDER] Current isRecording: ${this.isRecording}`);
+    console.log(`[RECORDER] processManager exists: ${!!this.processManager}`);
+    console.log(`[RECORDER] processManager.isRunning: ${this.processManager?.isRunning}`);
+
     if (!this.processManager || !this.processManager.isRunning) {
+      console.log(`[RECORDER] [${new Date().toISOString()}] ERROR: Recorder process not running`);
       errorHandler.notify(ErrorLevel.ERROR, CONTEXTS.START_RECORDING, ERROR_TYPES.RECORDER_NOT_READY, 'Recorder process not running');
       metrics.errorCounter.inc({ component: 'recorder', error_type: 'not_ready' });
       this.notifyUI('recording-error', 'Recorder not ready');
       return false;
     }
 
+    console.log(`[RECORDER] [${new Date().toISOString()}] Setting isRecording = true`);
     this.isRecording = true;
+    console.log(`[RECORDER] isRecording is now: ${this.isRecording}`);
+
     (Sentry as any).addBreadcrumb({
       category: 'user-action',
       message: 'User started recording',
@@ -237,13 +249,21 @@ class RecorderManager {
       // Ignore EPIPE errors during shutdown
     }
 
-    if (!this.processManager.send(config.get<string>('protocol.cmdStart'))) {
+    const cmdStart = config.get<string>('protocol.cmdStart');
+    console.log(`[RECORDER] [${new Date().toISOString()}] Sending command to Python: "${cmdStart}"`);
+    const sendResult = this.processManager.send(cmdStart);
+    console.log(`[RECORDER] processManager.send() returned: ${sendResult}`);
+
+    if (!sendResult) {
+      console.log(`[RECORDER] [${new Date().toISOString()}] ERROR: Failed to send start command`);
       errorHandler.notify(ErrorLevel.ERROR, CONTEXTS.START_RECORDING, ERROR_TYPES.SEND_FAILED, 'Failed to send start command');
       metrics.errorCounter.inc({ component: 'recorder', error_type: 'send_failed' });
       this.isRecording = false;
+      console.log(`[RECORDER] Reset isRecording to: ${this.isRecording}`);
       return false;
     }
 
+    console.log(`[RECORDER] [${new Date().toISOString()}] startRecording() COMPLETE - returning true\n`);
     return true;
   }
 
@@ -254,13 +274,23 @@ class RecorderManager {
    * @returns True if command sent successfully, false otherwise
    */
   public stopRecording(): boolean {
+    console.log(`\n[RECORDER] [${new Date().toISOString()}] stopRecording() CALLED`);
+    console.log(`[RECORDER] Current isRecording: ${this.isRecording}`);
+    console.log(`[RECORDER] processManager exists: ${!!this.processManager}`);
+    console.log(`[RECORDER] processManager.isRunning: ${this.processManager?.isRunning}`);
+
     if (!this.processManager || !this.processManager.isRunning) {
+      console.log(`[RECORDER] [${new Date().toISOString()}] ERROR: Recorder process not running`);
       errorHandler.notify(ErrorLevel.WARNING, CONTEXTS.STOP_RECORDING, ERROR_TYPES.RECORDER_NOT_READY, 'Recorder process not running');
       this.isRecording = false;
+      console.log(`[RECORDER] Reset isRecording to: ${this.isRecording}`);
       return false;
     }
 
+    console.log(`[RECORDER] [${new Date().toISOString()}] Setting isRecording = false`);
     this.isRecording = false;
+    console.log(`[RECORDER] isRecording is now: ${this.isRecording}`);
+
     (Sentry as any).addBreadcrumb({
       category: 'user-action',
       message: 'User stopped recording',
@@ -273,11 +303,18 @@ class RecorderManager {
       // Ignore EPIPE errors during shutdown
     }
 
-    if (!this.processManager.send(config.get<string>('protocol.cmdStop'))) {
+    const cmdStop = config.get<string>('protocol.cmdStop');
+    console.log(`[RECORDER] [${new Date().toISOString()}] Sending command to Python: "${cmdStop}"`);
+    const sendResult = this.processManager.send(cmdStop);
+    console.log(`[RECORDER] processManager.send() returned: ${sendResult}`);
+
+    if (!sendResult) {
+      console.log(`[RECORDER] [${new Date().toISOString()}] ERROR: Failed to send stop command`);
       errorHandler.notify(ErrorLevel.ERROR, CONTEXTS.STOP_RECORDING, ERROR_TYPES.SEND_FAILED, 'Failed to send stop command');
       return false;
     }
 
+    console.log(`[RECORDER] [${new Date().toISOString()}] stopRecording() COMPLETE - returning true\n`);
     return true;
   }
 

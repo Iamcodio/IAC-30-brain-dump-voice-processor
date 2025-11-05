@@ -6,7 +6,7 @@
  *
  * Responsibilities:
  * - Create and configure BrowserWindow
- * - Load HTML views (index.html, history.html)
+ * - Load HTML views (index.html, history.html, settings.html)
  * - Provide window instance to other managers
  * - Handle window lifecycle (destroy, isValid checks)
  */
@@ -31,8 +31,9 @@ class WindowManager {
    */
   public create(): BrowserWindow {
     this.window = new BrowserWindow({
-      width: config.get<number>('window.width'),
-      height: config.get<number>('window.height'),
+      width: 900,
+      height: 600,
+      show: true,                 // Show immediately
       webPreferences: {
         preload: path.join(this.baseDir, config.get<string>('paths.preloadScript')),
         nodeIntegration: config.get<boolean>('window.nodeIntegration'),
@@ -40,7 +41,7 @@ class WindowManager {
       }
     });
 
-    this.loadRecorderView();
+    this.loadHistoryView();
     return this.window;
   }
 
@@ -69,12 +70,42 @@ class WindowManager {
   }
 
   /**
+   * Load the settings view (settings.html)
+   *
+   * @throws Error If window not created
+   */
+  public loadSettingsView(): void {
+    if (!this.isValid()) {
+      throw new Error('Window not created');
+    }
+    this.window!.loadFile(path.join(this.baseDir, 'src', 'settings.html'));
+  }
+
+  /**
    * Get the current window instance
    *
    * @returns The window instance or null if not created
    */
   public getWindow(): BrowserWindow | null {
     return this.window;
+  }
+
+  /**
+   * Show the overlay window
+   */
+  public show(): void {
+    if (this.isValid()) {
+      this.window!.show();
+    }
+  }
+
+  /**
+   * Hide the overlay window
+   */
+  public hide(): void {
+    if (this.isValid()) {
+      this.window!.hide();
+    }
   }
 
   /**

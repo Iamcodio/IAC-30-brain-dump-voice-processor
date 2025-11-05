@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="22" height="22" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+  <!-- Template image for macOS menu bar - black on transparent -->
+  <!-- Simple microphone icon for "idle" state -->
+
+  <!-- Microphone body -->
+  <rect x="9" y="4" width="4" height="8" rx="2" fill="black"/>
+
+  <!-- Microphone stand -->
+  <path d="M 8 14 Q 8 16, 11 16 Q 14 16, 14 14" stroke="black" stroke-width="1.5" fill="none"/>
+  <line x1="11" y1="16" x2="11" y2="18" stroke="black" stroke-width="1.5"/>
+  <line x1="8" y1="18" x2="14" y2="18" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Sound waves (subtle) -->
+  <path d="M 15 8 Q 16 8, 16 9 Q 16 10, 15 10" stroke="black" stroke-width="1" fill="none" opacity="0.6"/>
+  <path d="M 7 8 Q 6 8, 6 9 Q 6 10, 7 10" stroke="black" stroke-width="1" fill="none" opacity="0.6"/>
+</svg>

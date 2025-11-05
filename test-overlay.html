@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Overlay Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 400px;
+      height: 100px;
+      overflow: hidden;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .overlay-box {
+      width: 100%;
+      height: 100%;
+      background: rgba(26, 26, 26, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 12px;
+
+      /* VISIBLE WHITE BORDER */
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      box-shadow:
+        0 0 20px rgba(255, 255, 255, 0.3),
+        0 8px 32px rgba(0, 0, 0, 0.5);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      /* Pulsing animation */
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow:
+          0 0 20px rgba(255, 255, 255, 0.3),
+          0 8px 32px rgba(0, 0, 0, 0.5);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow:
+          0 0 40px rgba(59, 130, 246, 0.6),
+          0 8px 32px rgba(0, 0, 0, 0.5);
+      }
+    }
+
+    .content {
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 18px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .bars {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      margin-top: 10px;
+    }
+
+    .bar {
+      width: 4px;
+      background: linear-gradient(to top, #3b82f6, #60a5fa);
+      border-radius: 2px;
+      animation: wave 1s ease-in-out infinite;
+    }
+
+    .bar:nth-child(1) { height: 20px; animation-delay: 0s; }
+    .bar:nth-child(2) { height: 30px; animation-delay: 0.1s; }
+    .bar:nth-child(3) { height: 40px; animation-delay: 0.2s; }
+    .bar:nth-child(4) { height: 50px; animation-delay: 0.3s; }
+    .bar:nth-child(5) { height: 40px; animation-delay: 0.4s; }
+    .bar:nth-child(6) { height: 30px; animation-delay: 0.5s; }
+    .bar:nth-child(7) { height: 20px; animation-delay: 0.6s; }
+
+    @keyframes wave {
+      0%, 100% {
+        transform: scaleY(1);
+        opacity: 0.7;
+      }
+      50% {
+        transform: scaleY(1.5);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay-box">
+    <div class="content">
+      Test Overlay - Pulsing
+      <div class="bars">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

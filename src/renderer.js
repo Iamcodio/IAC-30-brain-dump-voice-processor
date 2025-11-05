@@ -1,49 +1,54 @@
 /**
- * Main renderer script for index.html
- * Communicates with main process ONLY via window.electronAPI (preload.js)
+ * Minimal overlay renderer
+ * Handles state transitions and auto-hide logic
  */
 
-// Import constants (browser environment - need to use a different approach)
-// Note: In browser context, we can't use require(). Constants are duplicated here.
-// TODO: Consider bundling if this becomes maintenance burden.
-
-// Constants from src/config/constants.js
-const STATUS_MESSAGES = {
-  READY: 'Ready - Press Ctrl+Y to start',
-  RECORDING: 'Recording...',
-  TRANSCRIBING: 'Transcribing...'
-};
-const CSS_CLASSES = {
-  READY: 'ready',
-  RECORDING: 'recording'
-};
-
 // DOM Elements
-const statusElement = document.getElementById('status');
-const historyBtn = document.getElementById('historyBtn');
+const overlayContainer = document.getElementById('overlay-container');
 
-// Event listeners from main process
+// Auto-hide timer
+let autoHideTimer = null;
+
+/**
+ * Clear auto-hide timer if exists
+ */
+function clearAutoHideTimer() {
+  if (autoHideTimer) {
+    clearTimeout(autoHideTimer);
+    autoHideTimer = null;
+  }
+}
+
+/**
+ * Schedule auto-hide after delay
+ */
+function scheduleAutoHide(delayMs = 2000) {
+  clearAutoHideTimer();
+  autoHideTimer = setTimeout(() => {
+    window.electronAPI.hideOverlay();
+  }, delayMs);
+}
+
+// Recording started: show overlay, add recording state
 window.electronAPI.onRecordingStarted(() => {
-  statusElement.textContent = STATUS_MESSAGES.RECORDING;
-  statusElement.className = CSS_CLASSES.RECORDING;
+  clearAutoHideTimer();
+  overlayContainer.classList.remove('processing');
+  overlayContainer.classList.add('recording');
 });
 
+// Recording stopped: remove recording state, add processing state
 window.electronAPI.onRecordingStopped(() => {
-  statusElement.textContent = STATUS_MESSAGES.READY;
-  statusElement.className = CSS_CLASSES.READY;
+  overlayContainer.classList.remove('recording');
+  overlayContainer.classList.add('processing');
 });
 
+// Transcription started: continue processing state
 window.electronAPI.onTranscriptionStarted(() => {
-  statusElement.textContent = STATUS_MESSAGES.TRANSCRIBING;
-  statusElement.className = CSS_CLASSES.RECORDING;
+  overlayContainer.classList.add('processing');
 });
 
+// Transcription complete: remove processing state, schedule auto-hide
 window.electronAPI.onTranscriptionComplete(() => {
-  statusElement.textContent = STATUS_MESSAGES.READY;
-  statusElement.className = CSS_CLASSES.READY;
-});
-
-// Navigation
-historyBtn.addEventListener('click', () => {
-  window.electronAPI.showHistory();
+  overlayContainer.classList.remove('processing');
+  scheduleAutoHide(2000); // Hide after 2 seconds
 });

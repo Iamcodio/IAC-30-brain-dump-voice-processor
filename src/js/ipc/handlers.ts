@@ -29,6 +29,26 @@ interface DatabaseInterface {
 interface WindowManagerInterface {
   loadHistoryView(): void;
   loadRecorderView(): void;
+  loadSettingsView(): void;
+  show(): void;
+  hide(): void;
+}
+
+interface AutoFillManagerInterface {
+  updateSettings(settings: any): void;
+  performManualFill(): Promise<boolean>;
+}
+
+interface AccessibilityServiceInterface {
+  hasPermissions(): Promise<boolean>;
+  requestPermissions(): Promise<void>;
+  ensurePermissions(): Promise<boolean>;
+}
+
+interface ShortcutManagerInterface {
+  registerRecordingToggle(accelerator?: string): boolean;
+  unregisterAll(): void;
+  isRegistered(name: string): boolean;
 }
 
 /**
@@ -47,22 +67,37 @@ interface WindowManagerInterface {
 class IPCHandlers {
   private database: DatabaseInterface;
   private windowManager: WindowManagerInterface;
+  private autoFillManager?: AutoFillManagerInterface;
+  private accessibilityService?: AccessibilityServiceInterface;
+  private shortcutManager?: ShortcutManagerInterface;
 
   /**
    * Create IPCHandlers instance
    *
    * @param database - Database instance for recording queries
    * @param windowManager - Window manager for navigation
+   * @param autoFillManager - Optional AutoFillManager instance
+   * @param accessibilityService - Optional AccessibilityService instance
+   * @param shortcutManager - Optional ShortcutManager instance (for testing)
    */
-  constructor(database: DatabaseInterface, windowManager: WindowManagerInterface) {
+  constructor(
+    database: DatabaseInterface,
+    windowManager: WindowManagerInterface,
+    autoFillManager?: AutoFillManagerInterface,
+    accessibilityService?: AccessibilityServiceInterface,
+    shortcutManager?: ShortcutManagerInterface
+  ) {
     this.database = database;
     this.windowManager = windowManager;
+    this.autoFillManager = autoFillManager;
+    this.accessibilityService = accessibilityService;
+    this.shortcutManager = shortcutManager;
   }
 
   /**
    * Register all IPC handlers
    *
-   * Registers handlers for recordings, files, and navigation.
+   * Registers handlers for recordings, files, navigation, and auto-fill settings.
    * Call this after database and window manager are initialized.
    *
    * @example
@@ -72,6 +107,12 @@ class IPCHandlers {
     this.registerRecordingHandlers();
     this.registerFileHandlers();
     this.registerNavigationHandlers();
+    this.registerAutoFillHandlers();
+
+    // Register test handlers in test environment
+    if (process.env.NODE_ENV === 'test') {
+      this.registerTestHandlers();
+    }
   }
 
   /**
@@ -204,6 +245,7 @@ class IPCHandlers {
    * Handlers:
    * - 'show-history': Navigate to history view (history.html)
    * - 'show-recorder': Navigate to recorder view (index.html)
+   * - 'show-settings': Navigate to settings view (settings.html)
    *
    * @private
    */
@@ -235,6 +277,184 @@ class IPCHandlers {
         errorHandler.handleException(CONTEXTS.IPC_SHOW_RECORDER, error as Error);
       }
     });
+
+    /**
+     * IPC Handler: show-settings
+     * Loads settings view in main window
+     *
+     * @param event - IPC event
+     */
+    ipcMain.on('show-settings', (): void => {
+      try {
+        this.windowManager.loadSettingsView();
+      } catch (error) {
+        errorHandler.handleException('IPC.showSettings', error as Error);
+      }
+    });
+
+    /**
+     * IPC Handler: hide-overlay
+     * Hides the overlay window
+     *
+     * @param event - IPC event
+     */
+    ipcMain.on('hide-overlay', (): void => {
+      try {
+        this.windowManager.hide();
+      } catch (error) {
+        errorHandler.handleException('IPC.hideOverlay', error as Error);
+      }
+    });
+  }
+
+  /**
+   * Register auto-fill settings IPC handlers
+   *
+   * Handlers:
+   * - 'autofill-get-settings': Get current auto-fill settings
+   * - 'autofill-update-settings': Update auto-fill settings
+   * - 'autofill-manual-fill': Trigger manual auto-fill
+   * - 'accessibility-check-permissions': Check accessibility permissions
+   * - 'accessibility-request-permissions': Request accessibility permissions
+   *
+   * @private
+   */
+  private registerAutoFillHandlers(): void {
+    /**
+     * IPC Handler: autofill-get-settings
+     * Retrieves current auto-fill settings from config
+     *
+     * @returns Current auto-fill settings object
+     */
+    ipcMain.handle('autofill-get-settings', async (): Promise<any> => {
+      try {
+        return {
+          enabled: config.get<boolean>('autoFill.enabled'),
+          requireManualTrigger: config.get<boolean>('autoFill.requireManualTrigger'),
+          blacklistedApps: config.get<string[]>('autoFill.blacklistedApps')
+        };
+      } catch (error) {
+        errorHandler.handleException('IPC.autoFillGetSettings', error as Error);
+        return {
+          enabled: true,
+          requireManualTrigger: false,
+          blacklistedApps: []
+        };
+      }
+    });
+
+    /**
+     * IPC Handler: autofill-update-settings
+     * Updates auto-fill settings and applies to AutoFillManager
+     *
+     * @param event - IPC event
+     * @param newSettings - New settings object
+     * @returns true if successful
+     */
+    ipcMain.handle('autofill-update-settings', async (event: IpcMainInvokeEvent, newSettings: any): Promise<boolean> => {
+      try {
+        // Update autoFillManager if available
+        if (this.autoFillManager) {
+          this.autoFillManager.updateSettings(newSettings);
+        }
+        return true;
+      } catch (error) {
+        errorHandler.handleException('IPC.autoFillUpdateSettings', error as Error);
+        return false;
+      }
+    });
+
+    /**
+     * IPC Handler: autofill-manual-fill
+     * Triggers manual auto-fill action
+     *
+     * @returns true if fill succeeded, false otherwise
+     */
+    ipcMain.handle('autofill-manual-fill', async (): Promise<boolean> => {
+      try {
+        if (this.autoFillManager) {
+          return await this.autoFillManager.performManualFill();
+        }
+        return false;
+      } catch (error) {
+        errorHandler.handleException('IPC.autoFillManualFill', error as Error);
+        return false;
+      }
+    });
+
+    /**
+     * IPC Handler: accessibility-check-permissions
+     * Checks if accessibility permissions are granted
+     *
+     * @returns true if permissions granted, false otherwise
+     */
+    ipcMain.handle('accessibility-check-permissions', async (): Promise<boolean> => {
+      try {
+        if (this.accessibilityService) {
+          return await this.accessibilityService.hasPermissions();
+        }
+        return false;
+      } catch (error) {
+        errorHandler.handleException('IPC.accessibilityCheckPermissions', error as Error);
+        return false;
+      }
+    });
+
+    /**
+     * IPC Handler: accessibility-request-permissions
+     * Requests accessibility permissions from the user
+     */
+    ipcMain.handle('accessibility-request-permissions', async (): Promise<void> => {
+      try {
+        if (this.accessibilityService) {
+          await this.accessibilityService.requestPermissions();
+        }
+      } catch (error) {
+        errorHandler.handleException('IPC.accessibilityRequestPermissions', error as Error);
+      }
+    });
+  }
+
+  /**
+   * Register test-only IPC handlers
+   *
+   * These handlers are only available when NODE_ENV=test and allow
+   * Playwright tests to programmatically trigger internal functions.
+   *
+   * @private
+   */
+  private registerTestHandlers(): void {
+    console.log('🧪 Registering test IPC handlers');
+
+    /**
+     * IPC Handler: test-trigger-recording
+     * Programmatically triggers the recording toggle (simulates Ctrl+Y)
+     *
+     * @returns {Promise<boolean>} True if triggered successfully
+     */
+    ipcMain.handle('test-trigger-recording', async (): Promise<boolean> => {
+      try {
+        console.log('🧪 test-trigger-recording called');
+        if (!this.shortcutManager) {
+          console.error('❌ ShortcutManager not available');
+          return false;
+        }
+
+        // Access the private handleRecordingToggle through reflection
+        // In a real scenario, ShortcutManager should expose a public test method
+        const shortcutManager = this.shortcutManager as any;
+        if (shortcutManager.handleRecordingToggle) {
+          shortcutManager.handleRecordingToggle();
+          return true;
+        }
+
+        console.error('❌ handleRecordingToggle not found');
+        return false;
+      } catch (error) {
+        console.error('❌ Error in test-trigger-recording:', error);
+        return false;
+      }
+    });
   }
 
   /**
@@ -247,13 +467,32 @@ class IPCHandlers {
    * handlers.unregisterAll();
    */
   public unregisterAll(): void {
+    // Recording handlers
     ipcMain.removeHandler('get-recordings');
     ipcMain.removeHandler('search-recordings');
+
+    // File handlers
     ipcMain.removeHandler('read-file');
     ipcMain.removeAllListeners('play-audio');
     ipcMain.removeAllListeners('view-file');
+
+    // Navigation handlers
     ipcMain.removeAllListeners('show-history');
     ipcMain.removeAllListeners('show-recorder');
+    ipcMain.removeAllListeners('show-settings');
+    ipcMain.removeAllListeners('hide-overlay');
+
+    // Auto-fill handlers
+    ipcMain.removeHandler('autofill-get-settings');
+    ipcMain.removeHandler('autofill-update-settings');
+    ipcMain.removeHandler('autofill-manual-fill');
+    ipcMain.removeHandler('accessibility-check-permissions');
+    ipcMain.removeHandler('accessibility-request-permissions');
+
+    // Test handlers (if registered)
+    if (process.env.NODE_ENV === 'test') {
+      ipcMain.removeHandler('test-trigger-recording');
+    }
   }
 }
 

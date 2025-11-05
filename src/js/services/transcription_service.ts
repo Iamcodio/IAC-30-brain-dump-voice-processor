@@ -98,10 +98,12 @@ class TranscriptionService {
 
         const transcriber: ChildProcess = spawn(this.pythonPath, [this.scriptPath, audioPath]);
 
-        let transcriptPath: string | null = null;
+        let transcriptMdPath: string | null = null;
+        let transcriptTxtPath: string | null = null;
 
         transcriber.stdout?.on('data', (data: Buffer) => {
           const output = data.toString().trim();
+          console.log('[TRACE] transcriber stdout got:', output);
 
           try {
             logger.debug('Transcription stdout', { output });
@@ -109,13 +111,21 @@ class TranscriptionService {
             // Ignore EPIPE errors during shutdown
           }
 
-          if (output.startsWith(config.get<string>('protocol.transcriptSaved'))) {
-            transcriptPath = output.split(':')[1];
-            errorHandler.notify(ErrorLevel.INFO, CONTEXTS.TRANSCRIBE_AUDIO, ERROR_TYPES.TRANSCRIPT_SAVED,
-              `Transcript saved: ${transcriptPath}`);
-          } else if (output.startsWith(config.get<string>('protocol.errorPrefix'))) {
-            errorHandler.notify(ErrorLevel.ERROR, CONTEXTS.TRANSCRIBE_STDOUT, ERROR_TYPES.TRANSCRIPTION_ERROR, output);
-            this.notifyUI('transcription-error', output);
+          const lines = output.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith(config.get<string>('protocol.transcriptSaved'))) {
+              transcriptMdPath = line.split(':', 2)[1];
+              console.log('[TRACE] captured MD path:', transcriptMdPath);
+              errorHandler.notify(ErrorLevel.INFO, CONTEXTS.TRANSCRIBE_AUDIO, ERROR_TYPES.TRANSCRIPT_SAVED,
+                `Transcript saved: ${transcriptMdPath}`);
+            } else if (line.startsWith('TRANSCRIPT_TXT:')) {
+              transcriptTxtPath = line.split(':', 2)[1];
+              console.log('[TRACE] captured TXT path:', transcriptTxtPath);
+            } else if (line.startsWith(config.get<string>('protocol.errorPrefix'))) {
+              errorHandler.notify(ErrorLevel.ERROR, CONTEXTS.TRANSCRIBE_STDOUT, ERROR_TYPES.TRANSCRIPTION_ERROR, line);
+              this.notifyUI('transcription-error', line);
+            }
           }
         });
 
@@ -144,6 +154,7 @@ class TranscriptionService {
         });
 
         transcriber.on('close', (code: number | null) => {
+          console.log('[TRACE] transcriber closed with code:', code);
           // Calculate transcription latency
           const latency = (Date.now() - startTime) / 1000;
 
@@ -152,8 +163,30 @@ class TranscriptionService {
             metrics.totalTranscriptions.inc({ status: 'success' });
             errorHandler.notify(ErrorLevel.INFO, CONTEXTS.TRANSCRIBE_AUDIO, ERROR_TYPES.TRANSCRIPTION_COMPLETE,
               'Transcription completed successfully');
-            this.notifyUI('transcription-complete');
-            resolve(transcriptPath!);
+
+            // Read transcript text and send to UI
+            let transcriptText = '';
+            console.log('[TRACE] checking txtPath:', transcriptTxtPath, 'exists:', transcriptTxtPath && fs.existsSync(transcriptTxtPath));
+            if (transcriptTxtPath && fs.existsSync(transcriptTxtPath)) {
+              try {
+                transcriptText = fs.readFileSync(transcriptTxtPath, 'utf8');
+                console.log('[TRACE] read transcript text length:', transcriptText.length, 'preview:', transcriptText.substring(0, 50));
+              } catch (e) {
+                console.log('[TRACE] failed to read transcript file:', e);
+                logger.error('Failed to read transcript file', { error: e });
+              }
+            } else {
+              console.log('[TRACE] txtPath missing or file not found');
+            }
+
+            console.log('[TRACE] sending transcription-complete with text length:', transcriptText.length);
+            this.notifyUI('transcription-complete', { path: transcriptMdPath, text: transcriptText });
+
+            // Send transcript for auto-fill (clipboard write)
+            console.log('[TRACE] sending auto-fill-transcript with text length:', transcriptText.length);
+            this.mainWindow.webContents.send('auto-fill-transcript', transcriptText);
+
+            resolve(transcriptMdPath!);
           } else {
             metrics.transcriptionLatency.observe({ model: 'ggml-base', status: 'error' }, latency);
             metrics.totalTranscriptions.inc({ status: 'error' });

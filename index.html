@@ -1,70 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>BrainDump Voice Processor</title>
+  <title>BrainDump</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      margin: 0;
-      padding: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #1a1a1a;
-      color: #ffffff;
+      width: 400px;
+      height: 50px;
+      overflow: hidden;
+      -webkit-app-region: drag;
+      background: transparent;
     }
-    #waveform {
+
+    .overlay-container {
       width: 100%;
-      height: 200px;
-      background: #2a2a2a;
-      border-radius: 8px;
-      margin: 20px 0;
+      height: 100%;
+      background: rgba(26, 26, 26, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 25px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
-    #status {
-      font-size: 24px;
-      text-align: center;
-      margin: 20px 0;
+
+    #waveform-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
-    .recording {
-      color: #ff3b3b;
+
+    /* Processing state: pulsing glow */
+    .overlay-container.processing {
+      animation: processing-pulse 1.5s ease-in-out infinite;
     }
-    .ready {
-      color: #4caf50;
+
+    @keyframes processing-pulse {
+      0%, 100% {
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.4),
+          0 0 0 rgba(59, 130, 246, 0);
+      }
+      50% {
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.4),
+          0 0 30px rgba(59, 130, 246, 0.8);
+      }
     }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .header h1 {
-      margin: 0;
-      font-size: 24px;
-    }
-    .btn {
-      background: #3a3a3a;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 10px 16px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn:hover {
-      background: #4a4a4a;
-    }
-    .btn:active {
-      transform: translateY(1px);
+
+    /* Recording state: subtle glow */
+    .overlay-container.recording #waveform-canvas {
+      filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.3));
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>BrainDump Voice Processor</h1>
-    <button class="btn" id="historyBtn">View History</button>
+  <div class="overlay-container" id="overlay-container">
+    <canvas id="waveform-canvas" width="400" height="50"></canvas>
   </div>
-  <div id="status" class="ready">Ready - Press Ctrl+Y to start</div>
-  <canvas id="waveform"></canvas>
 
   <script src="src/renderer.js"></script>
+  <script type="module" src="src/renderer-waveform.js"></script>
 </body>
 </html>

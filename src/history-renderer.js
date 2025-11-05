@@ -52,13 +52,15 @@ const MESSAGES = {
 let allRecordings = [];
 let filteredRecordings = [];
 
-// DOM Elements
-const loadingIndicator = document.getElementById('loadingIndicator');
-const recordingList = document.getElementById('recordingList');
-const emptyState = document.getElementById('emptyState');
-const searchInput = document.getElementById('searchInput');
-const newRecordingBtn = document.getElementById('newRecordingBtn');
-const toast = document.getElementById('toast');
+// DOM Elements - will be initialized when DOM is ready
+let loadingIndicator;
+let recordingList;
+let emptyState;
+let searchInput;
+let newRecordingBtn;
+let refreshBtn;
+let settingsBtn;
+let toast;
 
 /**
  * Format timestamp for display
@@ -311,18 +313,50 @@ function filterRecordings(query) {
 }
 
 /**
- * Switch to recording view
+ * Trigger recording (don't switch views - just start recording)
  */
-function showRecorder() {
-  window.electronAPI.showRecorder();
+function startNewRecording() {
+  // Don't navigate anywhere - the user is already on history
+  // Recording will happen via Ctrl+Y shortcut or overlay
+  // This button is not needed since user can press Ctrl+Y
+  console.log('Use Ctrl+Y to start recording');
 }
 
-// Event Listeners
-searchInput.addEventListener('input', (e) => {
-  filterRecordings(e.target.value);
+// Wait for DOM to be ready before initializing
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialize DOM elements
+  loadingIndicator = document.getElementById('loadingIndicator');
+  recordingList = document.getElementById('recordingList');
+  emptyState = document.getElementById('emptyState');
+  searchInput = document.getElementById('searchInput');
+  newRecordingBtn = document.getElementById('newRecordingBtn');
+  refreshBtn = document.getElementById('refreshBtn');
+  settingsBtn = document.getElementById('settingsBtn');
+  toast = document.getElementById('toast');
+
+  // Event Listeners
+  searchInput.addEventListener('input', (e) => {
+    filterRecordings(e.target.value);
+  });
+
+  newRecordingBtn.addEventListener('click', startNewRecording);
+
+  refreshBtn.addEventListener('click', loadRecordings);
+
+  settingsBtn.addEventListener('click', () => {
+    window.electronAPI.showSettings();
+  });
+
+  // Listen for new transcriptions and auto-refresh
+  window.electronAPI.onTranscriptionComplete(() => {
+    console.log('New transcription completed - auto-refreshing history');
+    loadRecordings().then(() => {
+      // After refresh completes, trigger auto-paste if text field is focused
+      console.log('History refreshed - triggering auto-paste');
+      window.electronAPI.triggerAutoPaste();
+    });
+  });
+
+  // Initialize - load recordings
+  loadRecordings();
 });
-
-newRecordingBtn.addEventListener('click', showRecorder);
-
-// Initialize
-loadRecordings();

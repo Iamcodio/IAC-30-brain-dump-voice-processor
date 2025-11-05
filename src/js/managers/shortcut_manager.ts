@@ -23,6 +23,12 @@ interface RecorderManagerInterface {
   stopRecording(): void;
 }
 
+interface OverlayManagerInterface {
+  createOverlay(): void;
+  showOverlay(): void;
+  setState(state: string, data?: any): void;
+}
+
 /**
  * ShortcutManager class
  *
@@ -30,15 +36,19 @@ interface RecorderManagerInterface {
  */
 class ShortcutManager {
   private recorderManager: RecorderManagerInterface;
+  private overlayManager: OverlayManagerInterface;
   private registeredShortcuts: Set<string> = new Set();
+  private lastToggle: number = 0;
 
   /**
    * Create a ShortcutManager instance.
    *
    * @param recorderManager - RecorderManager instance for recording control
+   * @param overlayManager - OverlayWindowManager instance for overlay visibility
    */
-  constructor(recorderManager: RecorderManagerInterface) {
+  constructor(recorderManager: RecorderManagerInterface, overlayManager: OverlayManagerInterface) {
     this.recorderManager = recorderManager;
+    this.overlayManager = overlayManager;
   }
 
   /**
@@ -82,17 +92,52 @@ class ShortcutManager {
    * Handle recording toggle action.
    *
    * Toggles between start and stop recording based on current state.
+   * Shows overlay window when starting recording.
+   *
+   * Made public for test accessibility.
    */
-  private handleRecordingToggle(): void {
+  public handleRecordingToggle(): void {
+    const timestamp = new Date().toISOString();
+    console.log(`\n[STEP 1] [${timestamp}] ShortcutManager.handleRecordingToggle() CALLED`);
+
+    // Debounce: prevent rapid toggles (1.5 second cooldown)
+    const now = Date.now();
+    if (now - this.lastToggle < 1500) {
+      console.log(`[DEBOUNCE] [${timestamp}] Ignoring toggle - too soon (${now - this.lastToggle}ms since last toggle)`);
+      return;
+    }
+    this.lastToggle = now;
+
+    console.log(`[STEP 1] Current isRecording state: ${this.recorderManager.isRecording}`);
+
     try {
       if (!this.recorderManager.isRecording) {
-        this.recorderManager.startRecording();
+        console.log(`[STEP 2] [${new Date().toISOString()}] BRANCH: Starting recording (isRecording=false)`);
+        console.log(`[STEP 3] [${new Date().toISOString()}] Calling overlayManager.createOverlay()`);
+        this.overlayManager.createOverlay();
+
+        console.log(`[STEP 4] [${new Date().toISOString()}] Calling overlayManager.showOverlay()`);
+        this.overlayManager.showOverlay();
+
+        console.log(`[STEP 5] [${new Date().toISOString()}] Calling overlayManager.setState('recording')`);
+        this.overlayManager.setState('recording');
+
+        console.log(`[STEP 6] [${new Date().toISOString()}] Calling recorderManager.startRecording()`);
+        const startResult = this.recorderManager.startRecording();
+        console.log(`[STEP 7] [${new Date().toISOString()}] startRecording() returned: ${startResult}`);
+        console.log(`[STEP 8] [${new Date().toISOString()}] After startRecording, isRecording=${this.recorderManager.isRecording}`);
       } else {
-        this.recorderManager.stopRecording();
+        console.log(`[STEP 2] [${new Date().toISOString()}] BRANCH: Stopping recording (isRecording=true)`);
+        console.log(`[STEP 3] [${new Date().toISOString()}] Calling recorderManager.stopRecording()`);
+        const stopResult = this.recorderManager.stopRecording();
+        console.log(`[STEP 4] [${new Date().toISOString()}] stopRecording() returned: ${stopResult}`);
+        console.log(`[STEP 5] [${new Date().toISOString()}] After stopRecording, isRecording=${this.recorderManager.isRecording}`);
       }
     } catch (error) {
+      console.error(`[ERROR] [${new Date().toISOString()}] Exception in handleRecordingToggle:`, error);
       errorHandler.handleException('handleRecordingToggle', error as Error);
     }
+    console.log(`[STEP END] [${new Date().toISOString()}] ShortcutManager.handleRecordingToggle() COMPLETE\n`);
   }
 
   /**

@@ -382,6 +382,57 @@ class Database {
       return null;
     }
   }
+
+  /**
+   * Update a recording by ID with new fields
+   * @param id - Recording ID
+   * @param updates - Fields to update
+   * @returns Updated recording object or null if not found
+   */
+  public updateById(id: string, updates: Partial<RawRecording>): FormattedRecording | null {
+    try {
+      if (!id || typeof id !== 'string') {
+        errorHandler.notify(
+          ErrorLevel.WARNING,
+          'Database.updateById',
+          ERROR_TYPES.INVALID_ID,
+          'Invalid recording ID provided'
+        );
+        return null;
+      }
+
+      const db = this.readDB();
+      const index = db.recordings.findIndex(rec => rec.id === id);
+
+      if (index === -1) {
+        errorHandler.notify(
+          ErrorLevel.WARNING,
+          'Database.updateById',
+          ERROR_TYPES.INVALID_ID,
+          `Recording not found: ${id}`
+        );
+        return null;
+      }
+
+      // Update recording
+      db.recordings[index] = {
+        ...db.recordings[index],
+        ...updates
+      };
+
+      // Write to database
+      const dbDir = path.dirname(this.dbPath);
+      if (!fs.existsSync(dbDir)) {
+        fs.mkdirSync(dbDir, { recursive: FILE_OPS.RECURSIVE_MKDIR });
+      }
+      fs.writeFileSync(this.dbPath, JSON.stringify(db, null, DATABASE.JSON_INDENT));
+
+      return this.formatRecording(db.recordings[index]);
+    } catch (error) {
+      errorHandler.handleException('Database.updateById', error as Error);
+      return null;
+    }
+  }
 }
 
 export = Database;
