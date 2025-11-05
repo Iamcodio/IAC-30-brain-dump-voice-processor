@@ -201,11 +201,15 @@ describe('ProcessManager', () => {
     test('should calculate correct delay for second restart', () => {
       manager.start();
       mockProcess.emit('exit', 1, null);
+      expect(manager.restartCount).toBe(1);
 
+      // Clear event listeners to prevent double-triggering
+      mockProcess.removeAllListeners('exit');
       jest.advanceTimersByTime(1000);
-      mockProcess.emit('exit', 1, null);
 
+      mockProcess.emit('exit', 1, null);
       expect(manager.restartCount).toBe(2);
+
       // Delay = 1000 * 2^1 = 2000ms
       jest.advanceTimersByTime(2000);
       expect(spawn).toHaveBeenCalledTimes(3);
@@ -216,10 +220,14 @@ describe('ProcessManager', () => {
 
       // First restart
       mockProcess.emit('exit', 1, null);
+      expect(manager.restartCount).toBe(1);
+      mockProcess.removeAllListeners('exit');
       jest.advanceTimersByTime(1000);
 
       // Second restart
       mockProcess.emit('exit', 1, null);
+      expect(manager.restartCount).toBe(2);
+      mockProcess.removeAllListeners('exit');
       jest.advanceTimersByTime(2000);
 
       // Third restart

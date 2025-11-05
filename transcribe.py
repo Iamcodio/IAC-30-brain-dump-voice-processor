@@ -13,16 +13,18 @@ import json
 import subprocess
 from pathlib import Path
 from datetime import datetime
+from typing import Dict, Any, Optional
 
 # Add src to path for core module imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src', 'python'))
 
-from core.error_handler import error_handler, ErrorLevel
-from core.validators import FileValidator, ValidationError
-from transcription.whisper_transcriber import WhisperTranscriber
+from core.error_handler import error_handler, ErrorLevel  # noqa: E402
+from core.validators import FileValidator, ValidationError  # noqa: E402
+from transcription.whisper_transcriber import WhisperTranscriber  # noqa: E402
+from config.settings import DATABASE, FILES, PATHS, PROTOCOL, TRANSCRIPTION  # noqa: E402
 
 
-def get_audio_duration(audio_path):
+def get_audio_duration(audio_path: str) -> int:
     """
     Get duration of WAV audio file in seconds.
 
@@ -51,13 +53,13 @@ def get_audio_duration(audio_path):
         return 0
 
 
-def extract_first_line(transcript, max_length=100):
+def extract_first_line(transcript: str, max_length: Optional[int] = None) -> str:
     """
     Extract first line or first max_length characters from transcript.
 
     Args:
         transcript (str): Full transcript text
-        max_length (int): Maximum length of first line
+        max_length (int): Maximum length of first line (defaults to FILES.FIRST_LINE_MAX_LENGTH)
 
     Returns:
         str: First line trimmed to max_length
@@ -65,17 +67,21 @@ def extract_first_line(transcript, max_length=100):
     if not transcript:
         return ""
 
+    if max_length is None:
+        max_length = FILES.FIRST_LINE_MAX_LENGTH
+
     # Get first line or entire text if no newline
     first_line = transcript.split('\n')[0].strip()
 
     # Trim to max_length
     if len(first_line) > max_length:
-        return first_line[:max_length] + "..."
+        ellipsis: str = FILES.FIRST_LINE_ELLIPSIS
+        return first_line[:max_length] + ellipsis
 
     return first_line
 
 
-def save_to_database(recording_data):
+def save_to_database(recording_data: Dict[str, Any]) -> bool:
     """
     Save recording metadata to database using Node.js database module.
 
@@ -87,7 +93,7 @@ def save_to_database(recording_data):
     """
     try:
         # Create a Node.js script to add the recording
-        script_path = Path(__file__).parent / 'src' / 'add_recording.js'
+        script_path = Path(__file__).parent / DATABASE.SCRIPT_PATH
 
         # Validate script exists
         if not script_path.exists():
@@ -99,7 +105,7 @@ def save_to_database(recording_data):
             input=json.dumps(recording_data),
             capture_output=True,
             text=True,
-            timeout=5
+            timeout=DATABASE.TIMEOUT_SECONDS
         )
 
         if result.returncode == 0:
@@ -124,7 +130,7 @@ def save_to_database(recording_data):
             ErrorLevel.ERROR,
             "save_to_database",
             "DatabaseTimeout",
-            "Database operation timed out after 5 seconds"
+            f"Database operation timed out after {DATABASE.TIMEOUT_SECONDS} seconds"
         )
         return False
     except Exception as e:
@@ -149,7 +155,7 @@ if __name__ == "__main__":
         # Validate audio file before processing
         try:
             project_dir = os.path.dirname(__file__)
-            outputs_dir = os.path.join(project_dir, "outputs", "audio")
+            outputs_dir = os.path.join(project_dir, PATHS.OUTPUTS_DIR, PATHS.AUDIO_SUBDIR)
             FileValidator.validate_audio_file(audio_file, base_dir=outputs_dir)
         except ValidationError as e:
             error_handler.notify(
@@ -158,7 +164,7 @@ if __name__ == "__main__":
                 "ValidationError",
                 str(e)
             )
-            print(f"ERROR:ValidationError:{e}", flush=True)
+            print(f"{PROTOCOL.ERROR_VALIDATION}:{e}", flush=True)
             sys.exit(1)
 
         # Initialize transcriber
@@ -177,8 +183,8 @@ if __name__ == "__main__":
         timestamp = datetime.now().isoformat()
 
         # Prepare recording metadata
-        recording_data = {
-            'id': f"rec_{int(datetime.now().timestamp() * 1000)}",
+        recording_data: Dict[str, Any] = {
+            'id': f"{DATABASE.RECORDING_ID_PREFIX}{int(datetime.now().timestamp() * 1000)}",
             'timestamp': timestamp,
             'duration': duration,
             'audioFile': audio_file,
@@ -186,8 +192,8 @@ if __name__ == "__main__":
             'transcriptMd': result['md'],
             'firstLine': first_line,
             'metadata': {
-                'model': 'whisper-base',
-                'language': 'en'
+                'model': TRANSCRIPTION.MODEL_NAME,
+                'language': TRANSCRIPTION.LANGUAGE
             }
         }
 
@@ -195,8 +201,8 @@ if __name__ == "__main__":
         save_to_database(recording_data)
 
         # Output for main.js to parse
-        print(f"TRANSCRIPT_SAVED:{result['md']}", flush=True)
-        print(f"TRANSCRIPT_TXT:{result['txt']}", flush=True)
+        print(f"{PROTOCOL.EVENT_TRANSCRIPT_SAVED}:{result['md']}", flush=True)
+        print(f"{PROTOCOL.EVENT_TRANSCRIPT_TXT}:{result['txt']}", flush=True)
 
     except KeyboardInterrupt:
         error_handler.notify(

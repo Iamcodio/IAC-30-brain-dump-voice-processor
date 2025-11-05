@@ -1,34 +1,54 @@
 /**
- * Main renderer script for index.html
- * Communicates with main process ONLY via window.electronAPI (preload.js)
+ * Minimal overlay renderer
+ * Handles state transitions and auto-hide logic
  */
 
 // DOM Elements
-const statusElement = document.getElementById('status');
-const historyBtn = document.getElementById('historyBtn');
+const overlayContainer = document.getElementById('overlay-container');
 
-// Event listeners from main process
+// Auto-hide timer
+let autoHideTimer = null;
+
+/**
+ * Clear auto-hide timer if exists
+ */
+function clearAutoHideTimer() {
+  if (autoHideTimer) {
+    clearTimeout(autoHideTimer);
+    autoHideTimer = null;
+  }
+}
+
+/**
+ * Schedule auto-hide after delay
+ */
+function scheduleAutoHide(delayMs = 2000) {
+  clearAutoHideTimer();
+  autoHideTimer = setTimeout(() => {
+    window.electronAPI.hideOverlay();
+  }, delayMs);
+}
+
+// Recording started: show overlay, add recording state
 window.electronAPI.onRecordingStarted(() => {
-  statusElement.textContent = 'Recording...';
-  statusElement.className = 'recording';
+  clearAutoHideTimer();
+  overlayContainer.classList.remove('processing');
+  overlayContainer.classList.add('recording');
 });
 
+// Recording stopped: remove recording state, add processing state
 window.electronAPI.onRecordingStopped(() => {
-  statusElement.textContent = 'Ready - Press Ctrl+Y to start';
-  statusElement.className = 'ready';
+  overlayContainer.classList.remove('recording');
+  overlayContainer.classList.add('processing');
 });
 
+// Transcription started: continue processing state
 window.electronAPI.onTranscriptionStarted(() => {
-  statusElement.textContent = 'Transcribing...';
-  statusElement.className = 'recording';
+  overlayContainer.classList.add('processing');
 });
 
+// Transcription complete: remove processing state, schedule auto-hide
 window.electronAPI.onTranscriptionComplete(() => {
-  statusElement.textContent = 'Ready - Press Ctrl+Y to start';
-  statusElement.className = 'ready';
-});
-
-// Navigation
-historyBtn.addEventListener('click', () => {
-  window.electronAPI.showHistory();
+  overlayContainer.classList.remove('processing');
+  scheduleAutoHide(2000); // Hide after 2 seconds
 });

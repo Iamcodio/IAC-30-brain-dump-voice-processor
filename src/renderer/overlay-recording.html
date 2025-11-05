@@ -1,0 +1,38 @@
+<!-- src/renderer/overlay-recording.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Overlay</title>
+  <link rel="stylesheet" href="overlay-recording.css">
+</head>
+<body>
+  <div class="overlay-container">
+    <!-- Main widget with draggable region -->
+    <div class="superwhisper-widget" id="widget">
+
+      <!-- Waveform visualization canvas -->
+      <div class="waveform-section">
+        <canvas id="waveform" width="1160" height="80"></canvas>
+      </div>
+
+      <!-- Control buttons -->
+      <div class="controls-section">
+        <button class="btn btn-secondary" id="cancelBtn">
+          Cancel
+        </button>
+        <button class="btn btn-stop" id="stopBtn">
+          Stop
+        </button>
+      </div>
+
+      <!-- Status indicator - blue LED pulsing -->
+      <div class="status-indicator" id="statusIndicator"></div>
+    </div>
+  </div>
+
+  <script src="waveform.js"></script>
+  <script src="overlay.js"></script>
+</body>
+</html>

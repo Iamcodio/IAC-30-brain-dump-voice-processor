@@ -105,6 +105,1177 @@
         "model": "whisper-base",
         "language": "en"
       }
+    },
+    {
+      "id": "rec_1761402781128",
+      "timestamp": "2025-10-25T14:33:01.128Z",
+      "duration": 7,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_15-32-59.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_153259.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_153259.md",
+      "firstLine": "How oldly doodly doodly how oldly doodly doodly? I'm eating my dinner",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431334679",
+      "timestamp": "2025-10-25T22:28:54.679Z",
+      "duration": 2,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-28-54.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_232854.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_232854.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431338052",
+      "timestamp": "2025-10-25T22:28:58.052Z",
+      "duration": 1,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-28-57.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_232857.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_232857.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431338252",
+      "timestamp": "2025-10-25T22:28:58.252Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-28-58.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_232858.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_232858.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431339614",
+      "timestamp": "2025-10-25T22:28:59.614Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-28-59.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_232859.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_232859.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431340416",
+      "timestamp": "2025-10-25T22:29:00.416Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-29-00.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_232900.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_232900.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431340585",
+      "timestamp": "2025-10-25T22:29:00.585Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-29-00.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_232900.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_232900.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431341257",
+      "timestamp": "2025-10-25T22:29:01.257Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-29-01.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_232901.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_232901.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431342134",
+      "timestamp": "2025-10-25T22:29:02.134Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-29-01.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_232901.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_232901.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431342530",
+      "timestamp": "2025-10-25T22:29:02.530Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-29-02.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_232902.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_232902.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431343257",
+      "timestamp": "2025-10-25T22:29:03.257Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-29-02.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_232902.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_232902.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431344519",
+      "timestamp": "2025-10-25T22:29:04.519Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-29-04.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_232904.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_232904.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431344702",
+      "timestamp": "2025-10-25T22:29:04.702Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-29-04.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_232904.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_232904.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431734958",
+      "timestamp": "2025-10-25T22:35:34.958Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-35-34.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_233534.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_233534.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431742225",
+      "timestamp": "2025-10-25T22:35:42.225Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-35-34.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_233534.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_233534.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431954490",
+      "timestamp": "2025-10-25T22:39:14.490Z",
+      "duration": 4,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-39-13.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_233913.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_233913.md",
+      "firstLine": "Hello, hello, hello, hello, hello, hello, hello.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761431954611",
+      "timestamp": "2025-10-25T22:39:14.611Z",
+      "duration": 4,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-25_23-39-13.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-25_233913.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-25_233913.md",
+      "firstLine": "Hello, hello, hello, hello, hello, hello, hello.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761440045153",
+      "timestamp": "2025-10-26T00:54:05.153Z",
+      "duration": 2,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_01-54-04.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_015404.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_015404.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761444150067",
+      "timestamp": "2025-10-26T02:02:30.067Z",
+      "duration": 4,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_02-02-28.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_020228.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_020228.md",
+      "firstLine": "Hello, hello, hello, hello, hello.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761455240367",
+      "timestamp": "2025-10-26T05:07:20.367Z",
+      "duration": 8,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_05-07-19.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_050719.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_050719.md",
+      "firstLine": "Haro Haro Haro Haro Haro Haro Haro Haro Haro",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T07:03:49.661Z"
+    },
+    {
+      "id": "rec_1761465837404",
+      "timestamp": "2025-10-26T08:03:57.404Z",
+      "duration": 44,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_08-03-56.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_080356.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_080356.md",
+      "firstLine": "Okay Hello, okay, I'm not seeing the app. It's not floating above the screen. Okay, so take a screen...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761465974484",
+      "timestamp": "2025-10-26T08:06:14.484Z",
+      "duration": 54,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_08-06-11.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_080611.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_080611.md",
+      "firstLine": "Hello, hello, hello. Hello, hello, hello. Hello, hello, hello.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761466371007",
+      "timestamp": "2025-10-26T08:12:51.007Z",
+      "duration": 34,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_08-12-50.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_081250.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_081250.md",
+      "firstLine": "Hello. Hello. Hello. Hello. Hello. Hello. Hello. Hello. Hello. Hello.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761466462428",
+      "timestamp": "2025-10-26T08:14:22.428Z",
+      "duration": 23,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_08-14-21.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_081421.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_081421.md",
+      "firstLine": "[music] [music] [music]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761466778328",
+      "timestamp": "2025-10-26T08:19:38.328Z",
+      "duration": 13,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_08-19-37.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_081937.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_081937.md",
+      "firstLine": "Hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hell...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761468503934",
+      "timestamp": "2025-10-26T08:48:23.934Z",
+      "duration": 7,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_08-48-22.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_084822.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_084822.md",
+      "firstLine": "Hello, hello, hello, hello, hello, hello, hello, hello, hello.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761472491893",
+      "timestamp": "2025-10-26T09:54:51.893Z",
+      "duration": 6,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_09-54-51.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_095451.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_095451.md",
+      "firstLine": "Hello, hello.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761472525296",
+      "timestamp": "2025-10-26T09:55:25.296Z",
+      "duration": 13,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_09-55-23.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_095524.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_095524.md",
+      "firstLine": "Hello, hello, hello, hello.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761472525484",
+      "timestamp": "2025-10-26T09:55:25.484Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_09-55-25.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_095525.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_095525.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761472527233",
+      "timestamp": "2025-10-26T09:55:27.233Z",
+      "duration": 1,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_09-55-26.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_095526.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_095526.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761474164745",
+      "timestamp": "2025-10-26T10:22:44.745Z",
+      "duration": 1,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-22-44.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_102244.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_102244.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761474381829",
+      "timestamp": "2025-10-26T10:26:21.829Z",
+      "duration": 1,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-26-21.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_102621.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_102621.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761475019533",
+      "timestamp": "2025-10-26T10:36:59.533Z",
+      "duration": 1,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-36-59.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_103659.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_103659.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761475203631",
+      "timestamp": "2025-10-26T10:40:03.631Z",
+      "duration": 10,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-40-02.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_104002.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_104002.md",
+      "firstLine": "Hello. Hello. Hello. Hello. Hello. Hello. Hello. Hello. Hello. Hello. Hello. Hello. Hello.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761475209992",
+      "timestamp": "2025-10-26T10:40:09.992Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-40-09.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_104009.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_104009.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761475210287",
+      "timestamp": "2025-10-26T10:40:10.287Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-40-09.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_104010.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_104010.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761475210597",
+      "timestamp": "2025-10-26T10:40:10.597Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-40-10.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_104010.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_104010.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761475210937",
+      "timestamp": "2025-10-26T10:40:10.937Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-40-10.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_104010.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_104010.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761475211249",
+      "timestamp": "2025-10-26T10:40:11.249Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-40-11.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_104011.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_104011.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761475212448",
+      "timestamp": "2025-10-26T10:40:12.448Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-40-12.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_104012.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_104012.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761475212733",
+      "timestamp": "2025-10-26T10:40:12.733Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-40-12.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_104012.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_104012.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761475348828",
+      "timestamp": "2025-10-26T10:42:28.828Z",
+      "duration": 16,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-42-27.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_104227.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_104227.md",
+      "firstLine": "Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hell...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761475706915",
+      "timestamp": "2025-10-26T10:48:26.915Z",
+      "duration": 7,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-48-26.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_104826.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_104826.md",
+      "firstLine": "Hello, hello, hello, hello. Hello. This is a new hello.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761475729604",
+      "timestamp": "2025-10-26T10:48:49.604Z",
+      "duration": 2,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_10-48-49.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_104849.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_104849.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761476990997",
+      "timestamp": "2025-10-26T11:09:50.997Z",
+      "duration": 8,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_11-09-49.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_110949.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_110949.md",
+      "firstLine": "Hello, hello, hello. Hello, hello. Hello, hello, hello, hello, hello, hello, hello, hello, hello.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761477019749",
+      "timestamp": "2025-10-26T11:10:19.749Z",
+      "duration": 1,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_11-10-19.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_111019.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_111019.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T11:11:03.268Z"
+    },
+    {
+      "id": "rec_1761477702302",
+      "timestamp": "2025-10-26T11:21:42.302Z",
+      "duration": 8,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_11-21-40.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_112140.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_112140.md",
+      "firstLine": "Hello, hello, hello, hello. Hello. Bap, bap, bap, bap, bap, bap.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761477733954",
+      "timestamp": "2025-10-26T11:22:13.954Z",
+      "duration": 4,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_11-22-13.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_112213.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_112213.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761479459379",
+      "timestamp": "2025-10-26T11:50:59.379Z",
+      "duration": 8,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_11-50-57.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_115057.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_115057.md",
+      "firstLine": "Hello? Hello? Hello? Hello? Shabby Dibaba Dibaba Dibaba Dibaba Dibaba Dibaba",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761479468340",
+      "timestamp": "2025-10-26T11:51:08.340Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_11-51-07.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_115108.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_115108.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T11:55:22.951Z"
+    },
+    {
+      "id": "rec_1761479739457",
+      "timestamp": "2025-10-26T11:55:39.457Z",
+      "duration": 19,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_11-55-38.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_115538.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_115538.md",
+      "firstLine": "Hey GPT, how you doing? How you doing? How you doing GPT? How you doing? Claude cannot do his job. C...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T11:58:40.184Z"
+    },
+    {
+      "id": "rec_1761479932699",
+      "timestamp": "2025-10-26T11:58:52.699Z",
+      "duration": 14,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_11-58-52.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_115852.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_115852.md",
+      "firstLine": "Hey, hey, hey, how you doing? How you doing? How you doing, Chuck G.B.T. He's following the trace ma...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T12:05:05.882Z"
+    },
+    {
+      "id": "rec_1761480350914",
+      "timestamp": "2025-10-26T12:05:50.914Z",
+      "duration": 46,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_12-05-49.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_120549.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_120549.md",
+      "firstLine": "Hey, check GPT. How you doing? Now it keeps copying pasting the same fucking chat over and over and ...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T12:24:47.541Z"
+    },
+    {
+      "id": "rec_1761481524827",
+      "timestamp": "2025-10-26T12:25:24.827Z",
+      "duration": 15,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_12-25-23.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_122523.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_122523.md",
+      "firstLine": "Hello. Hello. Hello. Hello. Hello. Hello. Hello. Hello. Hello. Hello. Hello.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T12:25:29.576Z"
+    },
+    {
+      "id": "rec_1761481533892",
+      "timestamp": "2025-10-26T12:25:33.892Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_12-25-33.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_122533.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_122533.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761481534216",
+      "timestamp": "2025-10-26T12:25:34.216Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_12-25-33.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_122533.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_122533.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761481534475",
+      "timestamp": "2025-10-26T12:25:34.475Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_12-25-34.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_122534.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_122534.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761481535041",
+      "timestamp": "2025-10-26T12:25:35.041Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_12-25-34.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_122534.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_122534.md",
+      "firstLine": "[BLANK_AUDIO]",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T12:25:59.682Z"
+    },
+    {
+      "id": "rec_1761481535283",
+      "timestamp": "2025-10-26T12:25:35.283Z",
+      "duration": 0,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_12-25-35.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_122535.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_122535.md",
+      "firstLine": "",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761482408742",
+      "timestamp": "2025-10-26T12:40:08.742Z",
+      "duration": 8,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_12-40-08.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_124008.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_124008.md",
+      "firstLine": "Hello, hello, hello This is the last test and I'm been in the project",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761485518655",
+      "timestamp": "2025-10-26T13:31:58.655Z",
+      "duration": 12,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_13-31-58.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_133158.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_133158.md",
+      "firstLine": "Hello. Hello. Are you working, Bebe? Are you working, Bebe? Fuck your GPT. He sucks of a Kimbie pipe...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761485602822",
+      "timestamp": "2025-10-26T13:33:22.822Z",
+      "duration": 14,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_13-33-22.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_133322.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_133322.md",
+      "firstLine": "Hello! Hello! Jacky PT is a big homestead jewel. It talks like he thinks he knows everything but he ...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T13:35:55.571Z"
+    },
+    {
+      "id": "rec_1761486560888",
+      "timestamp": "2025-10-26T13:49:20.888Z",
+      "duration": 9,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_13-49-20.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_134920.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_134920.md",
+      "firstLine": "Hello, chat GPT is a pile of poo. How about you?",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761486944005",
+      "timestamp": "2025-10-26T13:55:44.005Z",
+      "duration": 9,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_13-55-42.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_135542.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_135542.md",
+      "firstLine": "GPT 2 smells of old cat's poo. It makes me go woo.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761488192118",
+      "timestamp": "2025-10-26T14:16:32.118Z",
+      "duration": 8,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_14-16-30.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_141630.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_141630.md",
+      "firstLine": "Hello, hello, Poli Poli Poli Poli Poli Poli",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T14:22:19.660Z"
+    },
+    {
+      "id": "rec_1761488630772",
+      "timestamp": "2025-10-26T14:23:50.772Z",
+      "duration": 18,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_14-23-50.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_142350.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_142350.md",
+      "firstLine": "Hey GPT, 3, 4, 5, 6, and 7. This shit. UGI. UGI know. No thank you, motherfucker. Yeah. That's what ...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761488875683",
+      "timestamp": "2025-10-26T14:27:55.683Z",
+      "duration": 9,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_14-27-55.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_142755.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_142755.md",
+      "firstLine": "Hey Poo, we will we can you smell curry coming from us, smelly, little butterm like yours Poo.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761489330819",
+      "timestamp": "2025-10-26T14:35:30.819Z",
+      "duration": 97,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_14-35-28.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_143528.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_143528.md",
+      "firstLine": "Yo, do you hear what I'm saying? What I'm trying to say is that you need to be able to what you need...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761489436693",
+      "timestamp": "2025-10-26T14:37:16.693Z",
+      "duration": 11,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_14-37-16.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_143716.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_143716.md",
+      "firstLine": "Right, I'm in focus now. I 100% know it's gonna work now. Everything's working. The model's working ...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761489600856",
+      "timestamp": "2025-10-26T14:40:00.856Z",
+      "duration": 28,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_14-40-00.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_144000.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_144000.md",
+      "firstLine": "Okay, yeah, so I'm just clicking in the text field now into your text field and then So by rights th...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761489636056",
+      "timestamp": "2025-10-26T14:40:36.056Z",
+      "duration": 4,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_14-40-35.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_144035.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_144035.md",
+      "firstLine": "Right, let me try it again with our own focus.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761489744595",
+      "timestamp": "2025-10-26T14:42:24.595Z",
+      "duration": 6,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_14-42-23.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_144224.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_144224.md",
+      "firstLine": "Right, one last test, one last test to see if the focus is working.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761490187978",
+      "timestamp": "2025-10-26T14:49:47.978Z",
+      "duration": 7,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_14-49-47.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_144947.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_144947.md",
+      "firstLine": "Hello, just checking that the focus field is working. Checking focus field is working.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761490357445",
+      "timestamp": "2025-10-26T14:52:37.445Z",
+      "duration": 6,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_14-52-36.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_145237.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_145237.md",
+      "firstLine": "Hello. No, it's still doing it. It's still doing it.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761490431144",
+      "timestamp": "2025-10-26T14:53:51.144Z",
+      "duration": 13,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_14-53-50.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_145350.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_145350.md",
+      "firstLine": "So let me try now, let me try now. What I've done is I've put the two windows side by side. Okay, an...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761490840308",
+      "timestamp": "2025-10-26T15:00:40.308Z",
+      "duration": 5,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_15-00-39.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_150039.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_150039.md",
+      "firstLine": "Hello checkin, checkin, checkin, checkin, checkin, checkin, no goto.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T15:00:40.418Z"
+    },
+    {
+      "id": "rec_1761491849112",
+      "timestamp": "2025-10-26T15:17:29.112Z",
+      "duration": 12,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_15-17-27.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_151727.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_151727.md",
+      "firstLine": "Hey, chicken, chicken, chicken, chicken, chicken, chicken, chicken, chicken, chicken. Or is it gonna...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T15:17:29.232Z"
+    },
+    {
+      "id": "rec_1761491873880",
+      "timestamp": "2025-10-26T15:17:53.880Z",
+      "duration": 6,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_15-17-53.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_151753.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_151753.md",
+      "firstLine": "One more time, motherfucker, let's just one more time. Yeeha!",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
+    },
+    {
+      "id": "rec_1761491889646",
+      "timestamp": "2025-10-26T15:18:09.646Z",
+      "duration": 5,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_15-18-09.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_151809.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_151809.md",
+      "firstLine": "Let's just one more time, one more time.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T15:18:09.747Z"
+    },
+    {
+      "id": "rec_1761491930757",
+      "timestamp": "2025-10-26T15:18:50.757Z",
+      "duration": 9,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_15-18-50.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_151850.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_151850.md",
+      "firstLine": "Let's just one more time. Let's test it. Test it. Test it. Is it gonna copy paste in automatic?",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T15:18:50.944Z"
+    },
+    {
+      "id": "rec_1761491942008",
+      "timestamp": "2025-10-26T15:19:02.008Z",
+      "duration": 6,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_15-19-01.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_151901.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_151901.md",
+      "firstLine": "Copy paste automatic. Copy paste automatic. Copy paste automatic.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T15:19:02.187Z"
+    },
+    {
+      "id": "rec_1761492243577",
+      "timestamp": "2025-10-26T15:24:03.577Z",
+      "duration": 7,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_15-24-02.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_152403.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_152403.md",
+      "firstLine": "One more time. I'm gonna check it one more time in the browser. Does it work in the browser?",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T15:24:03.790Z"
+    },
+    {
+      "id": "rec_1761492308155",
+      "timestamp": "2025-10-26T15:25:08.155Z",
+      "duration": 11,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_15-25-07.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_152507.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_152507.md",
+      "firstLine": "Okay, I just pre-did some text into the text box in Claude code. I'm just checking that that works n...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T15:25:08.369Z"
+    },
+    {
+      "id": "rec_1761493432299",
+      "timestamp": "2025-10-26T15:43:52.299Z",
+      "duration": 9,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_15-43-51.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_154351.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_154351.md",
+      "firstLine": "Hello, hello, hello, hello. I'm pasting in the chat, pasting in the chat.",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T15:43:52.516Z"
+    },
+    {
+      "id": "rec_1761493479943",
+      "timestamp": "2025-10-26T15:44:39.943Z",
+      "duration": 38,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_15-44-38.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_154438.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_154438.md",
+      "firstLine": "Yeah, man, it's working. It's working. That is working. That's the fucking, that's working. Look, I'...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T15:44:40.192Z"
+    },
+    {
+      "id": "rec_1761493593825",
+      "timestamp": "2025-10-26T15:46:33.825Z",
+      "duration": 55,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_15-46-32.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_154632.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_154632.md",
+      "firstLine": "Now I'm going to bed. Good night. I'm going to turn you off and I'm going to go to bed because I've ...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      },
+      "autoFillCount": 1,
+      "lastAutoFillTimestamp": "2025-10-26T15:46:34.036Z"
+    },
+    {
+      "id": "rec_1761518580725",
+      "timestamp": "2025-10-26T22:43:00.725Z",
+      "duration": 53,
+      "audioFile": "/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_22-42-59.wav",
+      "transcriptTxt": "outputs/transcripts/transcript_2025-10-26_224259.txt",
+      "transcriptMd": "outputs/transcripts/transcript_2025-10-26_224259.md",
+      "firstLine": "Yeah, it's working now. It's copying pasting into... It's copying pasting into the chat. The focus c...",
+      "metadata": {
+        "model": "whisper-base",
+        "language": "en"
+      }
     }
   ]
 }

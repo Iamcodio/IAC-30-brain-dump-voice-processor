@@ -11,27 +11,28 @@ import signal
 import argparse
 from datetime import datetime
 from pathlib import Path
+from typing import Optional, List, Dict, Any, cast
 
 class VoiceRecorder:
     """Audio recorder with start/stop control"""
     
-    def __init__(self, device_index=None, output_dir="outputs/audio"):
-        self.device_index = device_index
-        self.output_dir = Path(output_dir)
+    def __init__(self, device_index: Optional[int] = None, output_dir: str = "outputs/audio") -> None:
+        self.device_index: Optional[int] = device_index
+        self.output_dir: Path = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
         # Audio configuration
-        self.CHUNK = 1024
-        self.FORMAT = pyaudio.paInt16
-        self.CHANNELS = 1
-        self.RATE = 44100
+        self.CHUNK: int = 1024
+        self.FORMAT: int = pyaudio.paInt16
+        self.CHANNELS: int = 1
+        self.RATE: int = 44100
         
-        self.recording = False
-        self.frames = []
-        self.stream = None
-        self.audio = None
+        self.recording: bool = False
+        self.frames: List[bytes] = []
+        self.stream: Optional[pyaudio.Stream] = None
+        self.audio: Optional[pyaudio.PyAudio] = None
         
-    def start(self):
+    def start(self) -> bool:
         """Start recording"""
         try:
             self.audio = pyaudio.PyAudio()
@@ -66,7 +67,7 @@ class VoiceRecorder:
             
         return True
     
-    def stop(self):
+    def stop(self) -> Optional[str]:
         """Stop recording and save file"""
         self.recording = False
         
@@ -85,7 +86,7 @@ class VoiceRecorder:
         
         return None
     
-    def save_recording(self):
+    def save_recording(self) -> str:
         """Save recorded frames to WAV file"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"brain_dump_{timestamp}.wav"
@@ -93,34 +94,36 @@ class VoiceRecorder:
         
         wf = wave.open(str(filepath), 'wb')
         wf.setnchannels(self.CHANNELS)
-        wf.setsampwidth(self.audio.get_sample_size(self.FORMAT))
+        if self.audio:
+            wf.setsampwidth(self.audio.get_sample_size(self.FORMAT))
         wf.setframerate(self.RATE)
         wf.writeframes(b''.join(self.frames))
         wf.close()
         
         return str(filepath)
     
-    def handle_signal(self, signum, frame):
+    def handle_signal(self, signum: int, frame: Any) -> None:
         """Handle interrupt signal (Ctrl+C or process kill)"""
         print("RECORDING_STOPPED", flush=True)
         self.stop()
         sys.exit(0)
 
-def list_devices():
+def list_devices() -> List[Dict[str, Any]]:
     """List available audio input devices"""
     p = pyaudio.PyAudio()
     
     info = p.get_host_api_info_by_index(0)
-    num_devices = info.get('deviceCount')
+    num_devices = cast(int, info.get('deviceCount', 0))
     
-    devices = []
+    devices: List[Dict[str, Any]] = []
     for i in range(num_devices):
         device_info = p.get_device_info_by_host_api_device_index(0, i)
-        if device_info.get('maxInputChannels') > 0:
+        max_input_channels = cast(int, device_info.get('maxInputChannels', 0))
+        if max_input_channels > 0:
             devices.append({
                 'index': i,
                 'name': device_info.get('name'),
-                'channels': device_info.get('maxInputChannels'),
+                'channels': max_input_channels,
                 'rate': device_info.get('defaultSampleRate')
             })
     
@@ -132,7 +135,7 @@ def list_devices():
     
     return devices
 
-def main():
+def main() -> int:
     """Main entry point"""
     parser = argparse.ArgumentParser(description='Brain Dump Voice Recorder')
     parser.add_argument('--device', type=int, default=None, help='Audio input device index')

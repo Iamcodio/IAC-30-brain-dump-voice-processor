@@ -1,24 +1,88 @@
 #!/usr/bin/env python3
+"""
+Audio recorder daemon with stdin command interface.
+
+This module provides a simple audio recorder that listens for commands
+on stdin and outputs protocol messages to stdout. It uses PyAudio for
+real-time audio capture with callback-based streaming.
+
+The recorder is designed to run as a persistent background process,
+spawned by the Electron main process, and communicates via line-based
+text protocol.
+
+Protocol Commands (stdin):
+    start - Begin audio recording
+    stop  - Stop recording and save to WAV file
+    quit  - Clean up and exit
+
+Protocol Responses (stdout):
+    READY - Recorder initialized and ready
+    RECORDING_STARTED - Recording has begun
+    RECORDING_STOPPED:<path> - Recording saved to <path>
+    ERROR:<type> - Error occurred during operation
+
+Example:
+    $ python recorder.py
+    READY
+    (send "start" via stdin)
+    RECORDING_STARTED
+    (send "stop" via stdin)
+    RECORDING_STOPPED:/path/to/recording_2025-10-25_14-30-00.wav
+"""
 import os
 import sys
 import wave
 import pyaudio
 from datetime import datetime
+from typing import Optional, List, Tuple, Mapping
 
 # Add src to path for core module imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src', 'python'))
 
-from core.error_handler import error_handler, ErrorLevel
-from core.validators import FileValidator, ValidationError
+from core.error_handler import error_handler, ErrorLevel  # noqa: E402
+from core.validators import FileValidator  # noqa: E402
+from config.settings import AUDIO, PATHS, PROTOCOL  # noqa: E402
+
 
 class SimpleRecorder:
-    def __init__(self):
-        self.recording = False
-        self.frames = []
-        self.audio = None
-        self.stream = None
+    """
+    Audio recorder using PyAudio with stdin command interface.
+
+    Listens for commands on stdin (start/stop/quit) and outputs
+    protocol messages (READY, RECORDING_STARTED, etc.) to stdout.
+    Uses callback-based streaming for low-latency audio capture.
+
+    Audio is recorded as 16-bit PCM WAV files at 44.1kHz mono with
+    1024-frame buffers (~23ms latency).
+
+    Attributes:
+        recording (bool): Current recording state.
+        frames (list): Buffer of audio data frames.
+        audio (pyaudio.PyAudio): PyAudio instance for audio I/O.
+        stream (pyaudio.Stream): Active audio input stream.
+        output_dir (str): Directory path for saving WAV files.
+    """
+    def __init__(self) -> None:
+        """
+        Initialize the audio recorder.
+
+        Creates the output directory structure and initializes PyAudio
+        for audio capture. Validates that the output directory can be
+        created and that PyAudio initializes successfully.
+
+        Raises:
+            RuntimeError: If PyAudio initialization fails.
+            OSError: If output directory cannot be created.
+            SystemExit: On fatal initialization errors.
+        """
+        self.recording: bool = False
+        self.frames: List[bytes] = []
+        self.audio: Optional[pyaudio.PyAudio] = None
+        self.stream: Optional[pyaudio.Stream] = None
         # Output to project folder, not ~/09-personal
-        self.output_dir = os.path.join(os.path.dirname(__file__), "outputs", "audio")
+        self.output_dir: str = os.path.join(
+            os.path.dirname(__file__), PATHS.OUTPUTS_DIR, PATHS.AUDIO_SUBDIR
+        )
 
         try:
             # Validate and create output directory
@@ -29,9 +93,31 @@ class SimpleRecorder:
 
         except Exception as e:
             error_handler.handle_exception("SimpleRecorder.__init__", e, fatal=True)
-        
-    def audio_callback(self, in_data, frame_count, time_info, status):
-        """PyAudio callback for audio capture."""
+
+    def audio_callback(
+        self,
+        in_data: Optional[bytes],
+        frame_count: int,
+        time_info: Mapping[str, float],
+        status: int
+    ) -> Tuple[Optional[bytes], int]:
+        """
+        PyAudio stream callback for real-time audio capture.
+
+        Called automatically by PyAudio when audio frames are available.
+        Appends frames to buffer when recording is active. Logs warnings
+        if stream status indicates issues.
+
+        Args:
+            in_data (bytes): Raw audio data from input device.
+            frame_count (int): Number of frames in in_data.
+            time_info (Mapping[str, float]): Timing information from PyAudio.
+            status (int): Stream status flags (0 = no errors).
+
+        Returns:
+            tuple: (in_data, pyaudio.paContinue) to continue stream,
+                   or (None, pyaudio.paAbort) on error.
+        """
         try:
             if status:
                 error_handler.notify(
@@ -41,17 +127,32 @@ class SimpleRecorder:
                     f"Stream status: {status}"
                 )
 
-            if self.recording:
+            if self.recording and in_data:
                 self.frames.append(in_data)
 
-            return (in_data, pyaudio.paContinue)
+            return (in_data, AUDIO.STREAM_CONTINUE)
 
         except Exception as e:
             error_handler.handle_exception("SimpleRecorder.audio_callback", e)
-            return (None, pyaudio.paAbort)
+            return (None, AUDIO.STREAM_ABORT)
 
-    def start(self):
-        """Start audio recording."""
+    def start(self) -> None:
+        """
+        Start audio recording.
+
+        Opens a PyAudio input stream with callback-based capture.
+        Clears the frame buffer and sets recording state to True.
+        Outputs "RECORDING_STARTED" protocol message on success.
+
+        Audio format: 16-bit PCM, mono, 44.1kHz, 1024-frame buffer.
+
+        Raises:
+            RuntimeError: If PyAudio not initialized.
+
+        Outputs:
+            RECORDING_STARTED - Recording began successfully.
+            ERROR:RecordingStartFailed - Recording failed to start.
+        """
         try:
             if self.recording:
                 error_handler.notify(
@@ -69,20 +170,20 @@ class SimpleRecorder:
             self.frames = []
             self.stream = self.audio.open(
                 format=pyaudio.paInt16,
-                channels=1,
-                rate=44100,
+                channels=AUDIO.CHANNELS,
+                rate=AUDIO.SAMPLE_RATE,
                 input=True,
-                frames_per_buffer=1024,
+                frames_per_buffer=AUDIO.FRAMES_PER_BUFFER,
                 stream_callback=self.audio_callback
             )
-            print("RECORDING_STARTED", flush=True)
+            print(PROTOCOL.EVENT_RECORDING_STARTED, flush=True)
 
         except Exception as e:
             self.recording = False
             error_handler.handle_exception("SimpleRecorder.start", e)
-            print("ERROR:RecordingStartFailed", flush=True)
-    
-    def stop(self):
+            print(PROTOCOL.ERROR_RECORDING_START_FAILED, flush=True)
+
+    def stop(self) -> None:
         """Stop audio recording and save file."""
         try:
             self.recording = False
@@ -103,7 +204,7 @@ class SimpleRecorder:
 
             if self.frames:
                 filename = self.save_wav()
-                print(f"RECORDING_STOPPED:{filename}", flush=True)
+                print(f"{PROTOCOL.EVENT_RECORDING_STOPPED}:{filename}", flush=True)
             else:
                 error_handler.notify(
                     ErrorLevel.WARNING,
@@ -111,17 +212,17 @@ class SimpleRecorder:
                     "NoAudioData",
                     "No audio data captured"
                 )
-                print("RECORDING_STOPPED:no_audio", flush=True)
+                print(f"{PROTOCOL.EVENT_RECORDING_STOPPED}:{PROTOCOL.NO_AUDIO_MARKER}", flush=True)
 
         except Exception as e:
             error_handler.handle_exception("SimpleRecorder.stop", e)
-            print("ERROR:RecordingStopFailed", flush=True)
+            print(PROTOCOL.ERROR_RECORDING_STOP_FAILED, flush=True)
 
-    def save_wav(self):
+    def save_wav(self) -> str:
         """Save recorded frames to WAV file."""
         try:
-            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            filename = f"recording_{timestamp}.wav"
+            timestamp = datetime.now().strftime(PATHS.RECORDING_TIMESTAMP_FORMAT)
+            filename = f"{PATHS.RECORDING_PREFIX}{timestamp}{PATHS.AUDIO_EXTENSION}"
             filepath = os.path.join(self.output_dir, filename)
 
             # Validate output path
@@ -129,9 +230,9 @@ class SimpleRecorder:
 
             # Write WAV file
             wf = wave.open(filepath, 'wb')
-            wf.setnchannels(1)
-            wf.setsampwidth(2)
-            wf.setframerate(44100)
+            wf.setnchannels(AUDIO.CHANNELS)
+            wf.setsampwidth(AUDIO.SAMPLE_WIDTH)
+            wf.setframerate(AUDIO.SAMPLE_RATE)
             wf.writeframes(b''.join(self.frames))
             wf.close()
 
@@ -143,21 +244,21 @@ class SimpleRecorder:
         except Exception as e:
             error_handler.handle_exception("SimpleRecorder.save_wav", e)
             raise
-    
-    def run(self):
+
+    def run(self) -> None:
         """Main event loop listening for stdin commands."""
         try:
-            print("READY", flush=True)
+            print(PROTOCOL.EVENT_READY, flush=True)
 
             for line in sys.stdin:
                 try:
                     command = line.strip()
 
-                    if command == "start":
+                    if command == PROTOCOL.CMD_START:
                         self.start()
-                    elif command == "stop":
+                    elif command == PROTOCOL.CMD_STOP:
                         self.stop()
-                    elif command == "quit":
+                    elif command == PROTOCOL.CMD_QUIT:
                         self.cleanup()
                         break
                     else:
@@ -184,7 +285,7 @@ class SimpleRecorder:
         finally:
             self.cleanup()
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Clean up resources before exit."""
         try:
             if self.stream:
@@ -217,6 +318,7 @@ class SimpleRecorder:
                 "CleanupFailed",
                 f"Cleanup failed: {e}"
             )
+
 
 if __name__ == "__main__":
     try:

@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
 """Tests for transcribe.py"""
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock, mock_open
+from unittest.mock import Mock, patch, MagicMock
 import sys
 import os
 import wave
 import json
 
 # Add project root to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
 # Import functions from transcribe module
-from transcribe import get_audio_duration, extract_first_line, save_to_database
+from transcribe import get_audio_duration, extract_first_line, save_to_database  # noqa: E402
 
 
 class TestGetAudioDuration:
     """Test suite for get_audio_duration function"""
 
-    @patch('transcribe.FileValidator.validate_file_exists')
-    @patch('wave.open')
+    @patch("transcribe.FileValidator.validate_file_exists")
+    @patch("wave.open")
     def test_get_audio_duration_success(self, mock_wave_open, mock_validate):
         """Test successful audio duration extraction"""
         mock_wav = MagicMock()
@@ -30,8 +29,8 @@ class TestGetAudioDuration:
         duration = get_audio_duration("test.wav")
         assert duration == 1
 
-    @patch('transcribe.FileValidator.validate_file_exists')
-    @patch('wave.open')
+    @patch("transcribe.FileValidator.validate_file_exists")
+    @patch("wave.open")
     def test_get_audio_duration_multiple_seconds(self, mock_wave_open, mock_validate):
         """Test duration calculation for longer audio"""
         mock_wav = MagicMock()
@@ -42,8 +41,8 @@ class TestGetAudioDuration:
         duration = get_audio_duration("test.wav")
         assert duration == 10
 
-    @patch('transcribe.FileValidator.validate_file_exists')
-    @patch('wave.open')
+    @patch("transcribe.FileValidator.validate_file_exists")
+    @patch("wave.open")
     def test_get_audio_duration_rounds_correctly(self, mock_wave_open, mock_validate):
         """Test that duration is rounded to nearest second"""
         mock_wav = MagicMock()
@@ -54,7 +53,7 @@ class TestGetAudioDuration:
         duration = get_audio_duration("test.wav")
         assert duration == 1
 
-    @patch('wave.open')
+    @patch("wave.open")
     def test_get_audio_duration_file_not_found(self, mock_wave_open):
         """Test handling of missing file"""
         mock_wave_open.side_effect = FileNotFoundError("File not found")
@@ -62,7 +61,7 @@ class TestGetAudioDuration:
         duration = get_audio_duration("missing.wav")
         assert duration == 0
 
-    @patch('wave.open')
+    @patch("wave.open")
     def test_get_audio_duration_invalid_file(self, mock_wave_open):
         """Test handling of invalid WAV file"""
         mock_wave_open.side_effect = wave.Error("Invalid WAV file")
@@ -126,19 +125,19 @@ class TestExtractFirstLine:
 class TestSaveToDatabase:
     """Test suite for save_to_database function"""
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_save_to_database_success(self, mock_run):
         """Test successful database save"""
         mock_run.return_value = Mock(returncode=0, stderr="")
 
         recording_data = {
-            'id': 'rec_123',
-            'timestamp': '2025-01-01T12:00:00',
-            'duration': 10,
-            'audioFile': 'test.wav',
-            'transcriptTxt': 'transcript.txt',
-            'transcriptMd': 'transcript.md',
-            'firstLine': 'Test transcript'
+            "id": "rec_123",
+            "timestamp": "2025-01-01T12:00:00",
+            "duration": 10,
+            "audioFile": "test.wav",
+            "transcriptTxt": "transcript.txt",
+            "transcriptMd": "transcript.md",
+            "firstLine": "Test transcript",
         }
 
         result = save_to_database(recording_data)
@@ -147,43 +146,40 @@ class TestSaveToDatabase:
         # Verify subprocess was called correctly
         mock_run.assert_called_once()
         call_args = mock_run.call_args
-        assert call_args[0][0][0] == 'node'
-        assert 'add_recording.js' in call_args[0][0][1]
-        assert call_args[1]['input'] == json.dumps(recording_data)
+        assert call_args[0][0][0] == "node"
+        assert "add_recording.js" in call_args[0][0][1]
+        assert call_args[1]["input"] == json.dumps(recording_data)
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_save_to_database_failure(self, mock_run):
         """Test database save failure"""
         mock_run.return_value = Mock(returncode=1, stderr="Database error")
 
-        recording_data = {'id': 'rec_123'}
+        recording_data = {"id": "rec_123"}
         result = save_to_database(recording_data)
         assert result is False
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_save_to_database_timeout(self, mock_run):
         """Test timeout handling"""
         mock_run.side_effect = Exception("Timeout")
 
-        recording_data = {'id': 'rec_123'}
+        recording_data = {"id": "rec_123"}
         result = save_to_database(recording_data)
         assert result is False
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_save_to_database_json_serialization(self, mock_run):
         """Test that data is properly JSON serialized"""
         mock_run.return_value = Mock(returncode=0, stderr="")
 
-        recording_data = {
-            'id': 'rec_123',
-            'metadata': {'key': 'value'}
-        }
+        recording_data = {"id": "rec_123", "metadata": {"key": "value"}}
 
         save_to_database(recording_data)
 
         # Verify JSON was properly serialized
         call_args = mock_run.call_args
-        input_data = call_args[1]['input']
+        input_data = call_args[1]["input"]
         parsed = json.loads(input_data)
         assert parsed == recording_data
 
@@ -191,24 +187,25 @@ class TestSaveToDatabase:
 class TestTranscribeMain:
     """Test suite for main transcription flow"""
 
-    @patch('transcribe.save_to_database')
-    @patch('transcribe.extract_first_line')
-    @patch('transcribe.get_audio_duration')
-    @patch('transcribe.WhisperTranscriber')
-    @patch('sys.argv', ['transcribe.py', 'test_audio.wav'])
-    def test_main_success_flow(self, mock_transcriber_class, mock_duration,
-                              mock_first_line, mock_save_db):
+    @patch("transcribe.save_to_database")
+    @patch("transcribe.extract_first_line")
+    @patch("transcribe.get_audio_duration")
+    @patch("transcribe.WhisperTranscriber")
+    @patch("sys.argv", ["transcribe.py", "test_audio.wav"])
+    def test_main_success_flow(
+        self, mock_transcriber_class, mock_duration, mock_first_line, mock_save_db
+    ):
         """Test successful main execution flow"""
         # Setup mocks
         mock_transcriber = MagicMock()
         mock_transcriber.transcribe.return_value = {
-            'txt': '/path/to/transcript.txt',
-            'md': '/path/to/transcript.md',
-            'transcript': 'This is the transcript text'
+            "txt": "/path/to/transcript.txt",
+            "md": "/path/to/transcript.md",
+            "transcript": "This is the transcript text",
         }
         mock_transcriber_class.return_value = mock_transcriber
         mock_duration.return_value = 10
-        mock_first_line.return_value = 'This is the transcript text'
+        mock_first_line.return_value = "This is the transcript text"
         mock_save_db.return_value = True
 
         # Import and execute (this will run __main__)
@@ -216,7 +213,7 @@ class TestTranscribeMain:
 
         # Verify transcriber would be called
         transcriber = mock_transcriber_class()
-        result = transcriber.transcribe('test_audio.wav')
+        result = transcriber.transcribe("test_audio.wav")
 
-        assert result['transcript'] == 'This is the transcript text'
-        mock_transcriber.transcribe.assert_called_once_with('test_audio.wav')
+        assert result["transcript"] == "This is the transcript text"
+        mock_transcriber.transcribe.assert_called_once_with("test_audio.wav")

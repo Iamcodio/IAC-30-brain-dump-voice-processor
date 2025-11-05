@@ -1,458 +1,228 @@
-const { app, BrowserWindow, globalShortcut, ipcMain, shell } = require('electron');
-const { spawn } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+/**
+ * BrainDump Voice Processor - Main Application
+ *
+ * Refactored architecture using specialized managers:
+ * - WindowManager: Window lifecycle and view management
+ * - RecorderManager: Recorder process and recording control
+ * - TranscriptionService: Audio transcription handling
+ * - ShortcutManager: Global keyboard shortcuts
+ * - IPCHandlers: IPC communication with renderer
+ *
+ * Phase B.2 Refactoring - Reduced from 435 lines to ~100 lines
+ */
+
+const { app } = require('electron');
+const config = require('config');
 const Database = require('./database.js');
-const { ProcessManager } = require('./src/js/process_manager');
-const { errorHandler, ErrorLevel } = require('./src/js/error_handler');
+const { WindowManager } = require('./src/js/managers/window_manager');
+const { RecorderManager } = require('./src/js/managers/recorder_manager');
+const { TranscriptionService } = require('./src/js/services/transcription_service');
+const { ShortcutManager } = require('./src/js/managers/shortcut_manager');
+const { IPCHandlers } = require('./src/js/ipc/handlers');
+const MetricsServer = require('./src/server/metrics_server');
+const { errorHandler, ErrorLevel, initializeErrorTracking, captureError } = require('./src/js/error_handler');
+const { ERROR_TYPES, CONTEXTS } = require('./src/config/constants');
+const logger = require('./src/utils/logger');
 
-let mainWindow;
-let recorderManager;
-let isRecording = false;
-let db;
+/**
+ * Application class
+ *
+ * Orchestrates all managers and services using dependency injection.
+ */
+class Application {
+  constructor() {
+    this.baseDir = __dirname;
+    this.db = null;
+    this.windowManager = null;
+    this.recorderManager = null;
+    this.transcriptionService = null;
+    this.shortcutManager = null;
+    this.ipcHandlers = null;
+    this.metricsServer = null;
+  }
 
-function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      preload: path.join(__dirname, 'src', 'preload.js'),
-      nodeIntegration: false,
-      contextIsolation: true
-    }
-  });
-  mainWindow.loadFile('index.html');
-  startRecorderProcess();
-}
+  /**
+   * Initialize the application.
+   *
+   * Creates all managers and wires dependencies.
+   */
+  async initialize() {
+    try {
+      // Initialize error tracking first (Sentry)
+      initializeErrorTracking();
 
-function startRecorderProcess() {
-  try {
-    const pythonPath = path.join(__dirname, '.venv', 'bin', 'python');
-    const scriptPath = path.join(__dirname, 'recorder.py');
-
-    // Validate paths exist
-    if (!fs.existsSync(pythonPath)) {
-      errorHandler.notify(
-        ErrorLevel.CRITICAL,
-        'startRecorderProcess',
-        'PythonNotFound',
-        `Python not found at ${pythonPath}`
-      );
-      throw new Error(`Python not found: ${pythonPath}`);
-    }
-
-    if (!fs.existsSync(scriptPath)) {
-      errorHandler.notify(
-        ErrorLevel.CRITICAL,
-        'startRecorderProcess',
-        'ScriptNotFound',
-        `Recorder script not found at ${scriptPath}`
-      );
-      throw new Error(`Recorder script not found: ${scriptPath}`);
-    }
-
-    // Create process manager for recorder
-    recorderManager = new ProcessManager({
-      name: 'recorder',
-      command: pythonPath,
-      args: [scriptPath],
-      cwd: __dirname,
-      maxRestarts: 5,
-      baseDelay: 1000
-    });
-
-    // Handle stdout messages
-    recorderManager.on('stdout', (data) => {
-      const output = data.toString().trim();
-      console.log('Python:', output);
-
+      // Validate required configuration exists
       try {
-        if (output === 'READY') {
-          errorHandler.notify(
-            ErrorLevel.INFO,
-            'recorder.stdout',
-            'RecorderReady',
-            'Recorder process ready'
-          );
-          // Reset restart count on successful READY
-          recorderManager.resetRestartCount();
-        } else if (output === 'RECORDING_STARTED') {
-          mainWindow.webContents.send('recording-started');
-        } else if (output.startsWith('RECORDING_STOPPED:')) {
-          const filename = output.split(':')[1];
-          if (filename && filename !== 'no_audio') {
-            console.log('Saved:', filename);
-            mainWindow.webContents.send('recording-stopped');
-            transcribeAudio(filename);
-          } else {
-            errorHandler.notify(
-              ErrorLevel.WARNING,
-              'recorder.stdout',
-              'NoAudioRecorded',
-              'Recording stopped but no audio captured'
-            );
-            mainWindow.webContents.send('recording-stopped');
-          }
-        } else if (output.startsWith('ERROR:')) {
-          errorHandler.notify(
-            ErrorLevel.ERROR,
-            'recorder.stdout',
-            'RecorderError',
-            output
-          );
-          mainWindow.webContents.send('recording-error', output);
-        }
-      } catch (error) {
-        errorHandler.handleException('recorder.stdout.handler', error);
+        config.get('paths.audioDir');
+        config.get('paths.transcriptDir');
+        config.get('paths.databaseFile');
+        config.get('shortcuts.toggleRecording');
+        config.get('paths.pythonVenv');
+        config.get('paths.recorderScript');
+        config.get('paths.transcriberScript');
+        errorHandler.notify(
+          ErrorLevel.INFO,
+          'Application.initialize',
+          ERROR_TYPES.PROCESS_STARTING,
+          `Configuration loaded successfully (environment: ${process.env.NODE_ENV || 'development'})`
+        );
+      } catch (err) {
+        errorHandler.notify(
+          ErrorLevel.CRITICAL,
+          'Application.initialize',
+          ERROR_TYPES.VALIDATION_ERROR,
+          `Configuration validation failed: ${err.message}`
+        );
+        captureError(err, {
+          tags: { component: 'initialization' },
+          extra: { context: 'config validation' },
+          level: 'fatal'
+        });
+        app.quit();
+        return;
       }
-    });
 
-    // Handle stderr messages
-    recorderManager.on('stderr', (data) => {
-      const message = data.toString().trim();
-      // Python error_handler outputs to stderr, so this is expected
-      console.error('Recorder stderr:', message);
-    });
-
-    // Handle process errors
-    recorderManager.on('error', (error) => {
+      // Initialize database
+      this.db = new Database(this.baseDir);
       errorHandler.notify(
-        ErrorLevel.ERROR,
-        'recorder.process',
-        'ProcessError',
-        `Recorder process error: ${error.message}`
+        ErrorLevel.INFO,
+        'Application.initialize',
+        ERROR_TYPES.DATABASE_CREATED,
+        'Database initialized'
       );
-      mainWindow.webContents.send('recorder-error', error.message);
-    });
 
-    // Handle process restart
-    recorderManager.on('restarting', (count, delay) => {
+      // Create window manager and main window
+      this.windowManager = new WindowManager();
+      const mainWindow = this.windowManager.create();
+
+      // Create transcription service
+      this.transcriptionService = new TranscriptionService(mainWindow, this.baseDir);
+
+      // Create recorder manager
+      this.recorderManager = new RecorderManager(mainWindow, this.baseDir);
+
+      // Wire recorder → transcription flow
+      this.recorderManager.on('recordingComplete', (audioPath) => {
+        this.handleRecordingComplete(audioPath);
+      });
+
+      // Start recorder process
+      this.recorderManager.start();
+
+      // Create shortcut manager
+      this.shortcutManager = new ShortcutManager(this.recorderManager);
+      this.shortcutManager.registerRecordingToggle();
+
+      // Register IPC handlers
+      this.ipcHandlers = new IPCHandlers(this.db, this.windowManager);
+      this.ipcHandlers.registerAll();
+
+      // Start metrics server
+      this.metricsServer = new MetricsServer();
+      this.metricsServer.start();
+
       errorHandler.notify(
-        ErrorLevel.WARNING,
-        'recorder.process',
-        'ProcessRestarting',
-        `Recorder restarting (attempt ${count}/5) in ${delay}ms`
+        ErrorLevel.INFO,
+        'Application.initialize',
+        ERROR_TYPES.PROCESS_STARTING,
+        'Application initialized successfully'
       );
-      mainWindow.webContents.send('recorder-restarting', { count, delay });
-    });
 
-    // Handle max restarts exceeded
-    recorderManager.on('failed', () => {
-      errorHandler.notify(
-        ErrorLevel.CRITICAL,
-        'recorder.process',
-        'ProcessFailed',
-        'Recorder failed after maximum restart attempts'
-      );
-      mainWindow.webContents.send('recorder-failed');
-    });
-
-    // Start the recorder
-    recorderManager.start();
-
-  } catch (error) {
-    errorHandler.handleException('startRecorderProcess', error, true);
-  }
-}
-
-function transcribeAudio(audioPath) {
-  try {
-    // Validate audio file exists
-    if (!fs.existsSync(audioPath)) {
-      errorHandler.notify(
-        ErrorLevel.ERROR,
-        'transcribeAudio',
-        'FileNotFound',
-        `Audio file not found: ${audioPath}`
-      );
-      mainWindow.webContents.send('transcription-error', 'Audio file not found');
-      return;
+    } catch (error) {
+      errorHandler.handleException('Application.initialize', error, true);
     }
+  }
 
-    console.log('Starting transcription:', audioPath);
-    mainWindow.webContents.send('transcription-started');
+  /**
+   * Handle recording completion.
+   *
+   * Initiates transcription when a recording is saved.
+   *
+   * @param {string} audioPath - Path to saved audio file
+   */
+  async handleRecordingComplete(audioPath) {
+    try {
+      await this.transcriptionService.transcribe(audioPath);
+    } catch (error) {
+      errorHandler.handleException('Application.handleRecordingComplete', error);
+    }
+  }
 
-    const pythonPath = path.join(__dirname, '.venv', 'bin', 'python');
-    const scriptPath = path.join(__dirname, 'transcribe.py');
-
-    const transcriber = spawn(pythonPath, [scriptPath, audioPath]);
-
-    transcriber.stdout.on('data', (data) => {
-      const output = data.toString().trim();
-      console.log('Transcription:', output);
-
-      // Handle protocol messages
-      if (output.startsWith('TRANSCRIPT_SAVED:')) {
-        const mdPath = output.split(':')[1];
-        errorHandler.notify(
-          ErrorLevel.INFO,
-          'transcribeAudio',
-          'TranscriptSaved',
-          `Transcript saved: ${mdPath}`
-        );
-      } else if (output.startsWith('ERROR:')) {
-        errorHandler.notify(
-          ErrorLevel.ERROR,
-          'transcribeAudio.stdout',
-          'TranscriptionError',
-          output
-        );
-        mainWindow.webContents.send('transcription-error', output);
+  /**
+   * Cleanup on application quit.
+   */
+  cleanup() {
+    try {
+      // Unregister shortcuts
+      if (this.shortcutManager) {
+        this.shortcutManager.unregisterAll();
       }
-    });
 
-    transcriber.stderr.on('data', (data) => {
-      const message = data.toString().trim();
-      // Python error_handler outputs to stderr
-      console.error('Transcription stderr:', message);
-    });
-
-    transcriber.on('error', (error) => {
-      errorHandler.handleException('transcribeAudio.spawn', error);
-      mainWindow.webContents.send('transcription-error', error.message);
-    });
-
-    transcriber.on('close', (code) => {
-      if (code === 0) {
-        errorHandler.notify(
-          ErrorLevel.INFO,
-          'transcribeAudio',
-          'TranscriptionComplete',
-          'Transcription completed successfully'
-        );
-        mainWindow.webContents.send('transcription-complete');
-      } else {
-        errorHandler.notify(
-          ErrorLevel.ERROR,
-          'transcribeAudio',
-          'TranscriptionFailed',
-          `Transcription failed with exit code ${code}`
-        );
-        mainWindow.webContents.send('transcription-error', `Exit code ${code}`);
+      // Stop recorder process
+      if (this.recorderManager) {
+        this.recorderManager.stop(true);
       }
-    });
 
-  } catch (error) {
-    errorHandler.handleException('transcribeAudio', error);
-    mainWindow.webContents.send('transcription-error', error.message);
+      // Stop metrics server
+      if (this.metricsServer) {
+        this.metricsServer.stop();
+      }
+
+      errorHandler.notify(
+        ErrorLevel.INFO,
+        CONTEXTS.APP_WILL_QUIT,
+        ERROR_TYPES.PROCESS_STOPPING,
+        'Application cleanup complete'
+      );
+
+    } catch (error) {
+      errorHandler.handleException(CONTEXTS.APP_WILL_QUIT, error);
+    }
   }
 }
+
+// ============================================================================
+// Application Lifecycle
+// ============================================================================
+
+const application = new Application();
 
 app.whenReady().then(() => {
-  // Initialize database
-  db = new Database(__dirname);
-
-  createWindow();
-
-  const ret = globalShortcut.register('Control+Y', () => {
-    console.log('Hotkey pressed: Control+Y');
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
-    }
+  logger.info('Application starting', {
+    version: '2.1.0',
+    nodeVersion: process.version,
+    electronVersion: process.versions.electron,
+    platform: process.platform,
+    arch: process.arch
   });
-
-  if (!ret) {
-    console.log('Shortcut registration failed');
-  }
+  application.initialize();
 });
 
 app.on('will-quit', () => {
-  try {
-    globalShortcut.unregisterAll();
+  logger.info('Application shutting down');
+  application.cleanup();
+});
 
-    if (recorderManager) {
-      recorderManager.stop(true);
-    }
-
-  } catch (error) {
-    errorHandler.handleException('app.will-quit', error);
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
   }
 });
 
-function startRecording() {
-  try {
-    if (!recorderManager || !recorderManager.isRunning) {
-      errorHandler.notify(
-        ErrorLevel.ERROR,
-        'startRecording',
-        'RecorderNotReady',
-        'Recorder process not running'
-      );
-      mainWindow.webContents.send('recording-error', 'Recorder not ready');
-      return;
-    }
-
-    isRecording = true;
-    console.log('Sending start command to Python');
-
-    if (!recorderManager.send('start\n')) {
-      errorHandler.notify(
-        ErrorLevel.ERROR,
-        'startRecording',
-        'SendFailed',
-        'Failed to send start command to recorder'
-      );
-      isRecording = false;
-    }
-  } catch (error) {
-    errorHandler.handleException('startRecording', error);
-    isRecording = false;
-  }
-}
-
-function stopRecording() {
-  try {
-    if (!recorderManager || !recorderManager.isRunning) {
-      errorHandler.notify(
-        ErrorLevel.WARNING,
-        'stopRecording',
-        'RecorderNotReady',
-        'Recorder process not running'
-      );
-      isRecording = false;
-      return;
-    }
-
-    isRecording = false;
-    console.log('Sending stop command to Python');
-
-    if (!recorderManager.send('stop\n')) {
-      errorHandler.notify(
-        ErrorLevel.ERROR,
-        'stopRecording',
-        'SendFailed',
-        'Failed to send stop command to recorder'
-      );
-    }
-  } catch (error) {
-    errorHandler.handleException('stopRecording', error);
-    isRecording = false;
-  }
-}
-
-// IPC Handlers for History View
-
-/**
- * Get all recordings from database
- */
-ipcMain.handle('get-recordings', async () => {
-  try {
-    if (!db) {
-      throw new Error('Database not initialized');
-    }
-    return db.getAll();
-  } catch (error) {
-    errorHandler.handleException('ipc.get-recordings', error);
-    return [];
-  }
+// Global error handlers
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught exception', { error });
+  captureError(error, {
+    tags: { type: 'uncaughtException' },
+    level: 'fatal'
+  });
+  app.quit();
 });
 
-/**
- * Search recordings
- */
-ipcMain.handle('search-recordings', async (event, query) => {
-  try {
-    if (!db) {
-      throw new Error('Database not initialized');
-    }
-    return db.search(query);
-  } catch (error) {
-    errorHandler.handleException('ipc.search-recordings', error);
-    return [];
-  }
-});
-
-/**
- * Read file contents (for copying transcripts)
- */
-ipcMain.handle('read-file', async (event, filePath) => {
-  try {
-    // Validate file exists
-    if (!fs.existsSync(filePath)) {
-      throw new Error(`File not found: ${filePath}`);
-    }
-
-    // Validate file is within project directory (basic path traversal check)
-    const normalizedPath = path.normalize(filePath);
-    if (normalizedPath.includes('..')) {
-      throw new Error('Invalid file path');
-    }
-
-    return fs.readFileSync(filePath, 'utf-8');
-  } catch (error) {
-    errorHandler.handleException('ipc.read-file', error);
-    throw error;
-  }
-});
-
-/**
- * Play audio file in default player
- */
-ipcMain.on('play-audio', (event, audioPath) => {
-  try {
-    // Validate file exists
-    if (!fs.existsSync(audioPath)) {
-      errorHandler.notify(
-        ErrorLevel.ERROR,
-        'ipc.play-audio',
-        'FileNotFound',
-        `Audio file not found: ${audioPath}`
-      );
-      return;
-    }
-
-    if (process.platform === 'darwin') {
-      spawn('open', ['-a', 'QuickTime Player', audioPath]);
-    } else {
-      shell.openPath(audioPath);
-    }
-  } catch (error) {
-    errorHandler.handleException('ipc.play-audio', error);
-  }
-});
-
-/**
- * View file in default application
- */
-ipcMain.on('view-file', (event, filePath) => {
-  try {
-    // Validate file exists
-    if (!fs.existsSync(filePath)) {
-      errorHandler.notify(
-        ErrorLevel.ERROR,
-        'ipc.view-file',
-        'FileNotFound',
-        `File not found: ${filePath}`
-      );
-      return;
-    }
-
-    shell.openPath(filePath);
-  } catch (error) {
-    errorHandler.handleException('ipc.view-file', error);
-  }
-});
-
-/**
- * Switch to history view
- */
-ipcMain.on('show-history', () => {
-  try {
-    mainWindow.loadFile('history.html');
-  } catch (error) {
-    errorHandler.handleException('ipc.show-history', error);
-  }
-});
-
-/**
- * Switch to recorder view
- */
-ipcMain.on('show-recorder', () => {
-  try {
-    mainWindow.loadFile('index.html');
-  } catch (error) {
-    errorHandler.handleException('ipc.show-recorder', error);
-  }
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled rejection', { reason });
+  captureError(new Error(String(reason)), {
+    tags: { type: 'unhandledRejection' },
+    extra: { promise: String(promise) }
+  });
 });

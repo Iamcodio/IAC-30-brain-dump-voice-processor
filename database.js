@@ -1,6 +1,16 @@
 const fs = require('fs');
 const path = require('path');
-const { errorHandler, ErrorLevel } = require('./src/js/error_handler');
+const config = require('config');
+const { errorHandler, ErrorLevel, captureError } = require('./src/js/error_handler');
+const { FileValidator } = require('./src/js/utils/file_validator.js');
+const {
+  DURATION,
+  DATABASE,
+  MARKDOWN,
+  ERROR_TYPES,
+  CONTEXTS,
+  FILE_OPS
+} = require('./src/config/constants.js');
 
 /**
  * Database module for managing recordings
@@ -10,15 +20,15 @@ const { errorHandler, ErrorLevel } = require('./src/js/error_handler');
 class Database {
   constructor(baseDir) {
     this.baseDir = baseDir;
-    this.dbPath = path.join(baseDir, 'src', 'data', 'recordings.json');
-    this.audioDir = path.join(baseDir, 'outputs', 'audio');
-    this.transcriptDir = path.join(baseDir, 'outputs', 'transcripts');
+    this.dbPath = path.join(baseDir, config.get('paths.databaseFile'));
+    this.audioDir = path.join(baseDir, config.get('paths.audioDir'));
+    this.transcriptDir = path.join(baseDir, config.get('paths.transcriptDir'));
 
     // Validate and create database file if needed
     try {
       this.initializeDatabase();
     } catch (error) {
-      errorHandler.handleException('Database.constructor', error, true);
+      errorHandler.handleException(CONTEXTS.DB_CONSTRUCTOR, error, true);
     }
   }
 
@@ -31,28 +41,27 @@ class Database {
 
       // Create data directory if it doesn't exist
       if (!fs.existsSync(dbDir)) {
-        fs.mkdirSync(dbDir, { recursive: true });
+        fs.mkdirSync(dbDir, { recursive: FILE_OPS.RECURSIVE_MKDIR });
         errorHandler.notify(
           ErrorLevel.INFO,
-          'Database.initializeDatabase',
-          'DirectoryCreated',
+          CONTEXTS.DB_INITIALIZE,
+          ERROR_TYPES.DIRECTORY_CREATED,
           `Created database directory: ${dbDir}`
         );
       }
 
       // Create empty database file if it doesn't exist
       if (!fs.existsSync(this.dbPath)) {
-        const emptyDB = { recordings: [] };
-        fs.writeFileSync(this.dbPath, JSON.stringify(emptyDB, null, 2));
+        fs.writeFileSync(this.dbPath, JSON.stringify(DATABASE.EMPTY_STRUCTURE, null, DATABASE.JSON_INDENT));
         errorHandler.notify(
           ErrorLevel.INFO,
-          'Database.initializeDatabase',
-          'DatabaseCreated',
+          CONTEXTS.DB_INITIALIZE,
+          ERROR_TYPES.DATABASE_CREATED,
           `Created database file: ${this.dbPath}`
         );
       }
     } catch (error) {
-      errorHandler.handleException('Database.initializeDatabase', error);
+      errorHandler.handleException(CONTEXTS.DB_INITIALIZE, error);
       throw error;
     }
   }
@@ -64,34 +73,32 @@ class Database {
   readDB() {
     try {
       // Validate file exists
-      if (!fs.existsSync(this.dbPath)) {
-        errorHandler.notify(
-          ErrorLevel.WARNING,
-          'Database.readDB',
-          'FileNotFound',
-          'Database file not found, returning empty database'
-        );
-        return { recordings: [] };
+      if (!FileValidator.validateExistsWarn(this.dbPath, CONTEXTS.DB_READ)) {
+        return DATABASE.EMPTY_STRUCTURE;
       }
 
-      const data = fs.readFileSync(this.dbPath, 'utf-8');
+      const data = fs.readFileSync(this.dbPath, FILE_OPS.ENCODING);
       const parsed = JSON.parse(data);
 
       // Validate structure
       if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.recordings)) {
         errorHandler.notify(
           ErrorLevel.WARNING,
-          'Database.readDB',
-          'InvalidStructure',
+          CONTEXTS.DB_READ,
+          ERROR_TYPES.INVALID_STRUCTURE,
           'Database has invalid structure, returning empty database'
         );
-        return { recordings: [] };
+        return DATABASE.EMPTY_STRUCTURE;
       }
 
       return parsed;
     } catch (error) {
-      errorHandler.handleException('Database.readDB', error);
-      return { recordings: [] };
+      errorHandler.handleException(CONTEXTS.DB_READ, error);
+      captureError(error, {
+        tags: { component: 'database', operation: 'readDB' },
+        extra: { dbPath: this.dbPath }
+      });
+      return DATABASE.EMPTY_STRUCTURE;
     }
   }
 
@@ -114,15 +121,19 @@ class Database {
         } catch (error) {
           errorHandler.notify(
             ErrorLevel.WARNING,
-            'Database.getAll.sort',
-            'InvalidTimestamp',
+            CONTEXTS.DB_GET_ALL + '.sort',
+            ERROR_TYPES.INVALID_TIMESTAMP,
             'Invalid timestamp in recording'
           );
           return 0;
         }
       });
     } catch (error) {
-      errorHandler.handleException('Database.getAll', error);
+      errorHandler.handleException(CONTEXTS.DB_GET_ALL, error);
+      captureError(error, {
+        tags: { component: 'database', operation: 'getAll' },
+        extra: { dbPath: this.dbPath }
+      });
       return [];
     }
   }
@@ -139,8 +150,8 @@ class Database {
       if (!recording || typeof recording !== 'object') {
         errorHandler.notify(
           ErrorLevel.WARNING,
-          'Database.formatRecording',
-          'InvalidRecording',
+          CONTEXTS.DB_FORMAT_RECORDING,
+          ERROR_TYPES.INVALID_RECORDING,
           'Invalid recording object'
         );
         return null;
@@ -150,22 +161,15 @@ class Database {
       let fullText = '';
       if (recording.transcriptMd) {
         try {
-          if (fs.existsSync(recording.transcriptMd)) {
-            const content = fs.readFileSync(recording.transcriptMd, 'utf-8');
+          if (FileValidator.validateExistsWarn(recording.transcriptMd, CONTEXTS.DB_FORMAT_RECORDING)) {
+            const content = fs.readFileSync(recording.transcriptMd, FILE_OPS.ENCODING);
             fullText = this.extractTranscriptText(content);
-          } else {
-            errorHandler.notify(
-              ErrorLevel.WARNING,
-              'Database.formatRecording',
-              'TranscriptNotFound',
-              `Transcript file not found: ${recording.transcriptMd}`
-            );
           }
         } catch (error) {
           errorHandler.notify(
             ErrorLevel.WARNING,
-            'Database.formatRecording',
-            'TranscriptReadError',
+            CONTEXTS.DB_FORMAT_RECORDING,
+            ERROR_TYPES.TRANSCRIPT_READ_ERROR,
             `Could not read transcript: ${recording.transcriptMd}`
           );
         }
@@ -182,11 +186,11 @@ class Database {
         transcriptTxt: recording.transcriptTxt,
         transcriptMd: recording.transcriptMd,
         duration: durationStr,
-        preview: recording.firstLine || 'No transcript available',
+        preview: recording.firstLine || DURATION.NO_TRANSCRIPT_LABEL,
         fullText: fullText || recording.firstLine || ''
       };
     } catch (error) {
-      errorHandler.handleException('Database.formatRecording', error);
+      errorHandler.handleException(CONTEXTS.DB_FORMAT_RECORDING, error);
       return null;
     }
   }
@@ -197,19 +201,19 @@ class Database {
    * @returns {string} Extracted transcript text
    */
   extractTranscriptText(content) {
-    const lines = content.split('\n');
+    const lines = content.split(MARKDOWN.LINE_SEPARATOR);
     let transcriptText = [];
     let metadataEnded = false;
 
     for (let line of lines) {
-      if (line.trim() === '---') {
+      if (line.trim() === MARKDOWN.SEPARATOR) {
         metadataEnded = true;
       } else if (metadataEnded && line.trim()) {
         transcriptText.push(line.trim());
       }
     }
 
-    return transcriptText.join('\n');
+    return transcriptText.join(MARKDOWN.LINE_SEPARATOR);
   }
 
   /**
@@ -220,15 +224,7 @@ class Database {
   formatTimestamp(isoTimestamp) {
     try {
       const date = new Date(isoTimestamp);
-      return date.toLocaleString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      });
+      return date.toLocaleString(DATABASE.DATE_LOCALE, DATABASE.DATE_OPTIONS);
     } catch (error) {
       return isoTimestamp;
     }
@@ -241,14 +237,14 @@ class Database {
    */
   formatDuration(seconds) {
     if (!seconds || seconds === 0) {
-      return 'Unknown';
+      return DURATION.UNKNOWN_LABEL;
     }
 
-    if (seconds < 60) {
+    if (seconds < DURATION.SECONDS_PER_MINUTE) {
       return `${seconds} sec`;
     } else {
-      const minutes = Math.floor(seconds / 60);
-      const secs = Math.round(seconds % 60);
+      const minutes = Math.floor(seconds / DURATION.SECONDS_PER_MINUTE);
+      const secs = Math.round(seconds % DURATION.SECONDS_PER_MINUTE);
       return `${minutes}m ${secs}s`;
     }
   }
@@ -283,15 +279,19 @@ class Database {
         } catch (error) {
           errorHandler.notify(
             ErrorLevel.WARNING,
-            'Database.search.filter',
-            'FilterError',
+            CONTEXTS.DB_SEARCH + '.filter',
+            ERROR_TYPES.FILTER_ERROR,
             `Error filtering recording: ${error.message}`
           );
           return false;
         }
       });
     } catch (error) {
-      errorHandler.handleException('Database.search', error);
+      errorHandler.handleException(CONTEXTS.DB_SEARCH, error);
+      captureError(error, {
+        tags: { component: 'database', operation: 'search' },
+        extra: { query, dbPath: this.dbPath }
+      });
       return [];
     }
   }
@@ -306,8 +306,8 @@ class Database {
       if (!id || typeof id !== 'string') {
         errorHandler.notify(
           ErrorLevel.WARNING,
-          'Database.getById',
-          'InvalidId',
+          CONTEXTS.DB_GET_BY_ID,
+          ERROR_TYPES.INVALID_ID,
           'Invalid recording ID provided'
         );
         return null;
@@ -317,7 +317,7 @@ class Database {
       const recording = db.recordings.find(rec => rec.id === id);
       return recording ? this.formatRecording(recording) : null;
     } catch (error) {
-      errorHandler.handleException('Database.getById', error);
+      errorHandler.handleException(CONTEXTS.DB_GET_BY_ID, error);
       return null;
     }
   }
@@ -332,8 +332,8 @@ class Database {
       if (!transcriptPath || typeof transcriptPath !== 'string') {
         errorHandler.notify(
           ErrorLevel.WARNING,
-          'Database.getByPath',
-          'InvalidPath',
+          CONTEXTS.DB_GET_BY_PATH,
+          ERROR_TYPES.INVALID_PATH,
           'Invalid transcript path provided'
         );
         return null;
@@ -345,7 +345,7 @@ class Database {
       );
       return recording ? this.formatRecording(recording) : null;
     } catch (error) {
-      errorHandler.handleException('Database.getByPath', error);
+      errorHandler.handleException(CONTEXTS.DB_GET_BY_PATH, error);
       return null;
     }
   }
