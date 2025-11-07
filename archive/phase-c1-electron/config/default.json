@@ -1,0 +1,98 @@
+{
+  "app": {
+    "name": "BrainDump Voice Processor",
+    "version": "2.5.0-beta1"
+  },
+  "paths": {
+    "audioDir": "outputs/audio",
+    "transcriptDir": "outputs/transcripts",
+    "databaseFile": "src/data/recordings.json",
+    "pythonVenv": ".venv/bin/python",
+    "recorderScript": "recorder.py",
+    "transcriberScript": "transcribe.py",
+    "preloadScript": "src/preload.js",
+    "indexHtml": "index.html",
+    "historyHtml": "history.html"
+  },
+  "recording": {
+    "sampleRate": 44100,
+    "channels": 1,
+    "format": "WAV",
+    "bitDepth": 16
+  },
+  "transcription": {
+    "model": "ggml-base.bin",
+    "language": "en",
+    "threads": 4
+  },
+  "shortcuts": {
+    "toggleRecording": "Control+Y"
+  },
+  "logging": {
+    "level": "info",
+    "format": "json",
+    "retention": "14d"
+  },
+  "metrics": {
+    "enabled": true,
+    "port": 9090
+  },
+  "sentry": {
+    "enabled": false,
+    "dsn": ""
+  },
+  "window": {
+    "width": 800,
+    "height": 600,
+    "nodeIntegration": false,
+    "contextIsolation": true
+  },
+  "process": {
+    "maxRestarts": 5,
+    "baseDelayMs": 1000,
+    "gracefulShutdownTimeoutMs": 5000,
+    "stdioMode": ["pipe", "pipe", "pipe"]
+  },
+  "protocol": {
+    "ready": "READY",
+    "recordingStarted": "RECORDING_STARTED",
+    "recordingStopped": "RECORDING_STOPPED:",
+    "errorPrefix": "ERROR:",
+    "transcriptSaved": "TRANSCRIPT_SAVED:",
+    "cmdStart": "start\n",
+    "cmdStop": "stop\n",
+    "cmdQuit": "quit\n",
+    "noAudioCaptured": "no_audio"
+  },
+  "platform": {
+    "darwin": "darwin",
+    "audioPlayerMacOS": "QuickTime Player"
+  },
+  "ui": {
+    "statusMessages": {
+      "ready": "Ready - Press Ctrl+Y to start",
+      "recording": "Recording...",
+      "transcribing": "Transcribing..."
+    },
+    "toastDurationMs": 3000,
+    "previewMaxLength": 150
+  },
+  "database": {
+    "jsonIndent": 2,
+    "dateLocale": "en-US"
+  },
+  "file": {
+    "encoding": "utf-8",
+    "recursiveMkdir": true
+  },
+  "autoFill": {
+    "enabled": true,
+    "requireManualTrigger": true,
+    "debounceMs": 500,
+    "blacklistedApps": [
+      "com.apple.keychainaccess",
+      "com.1password.1password",
+      "com.agilebits.onepassword7"
+    ]
+  }
+}

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+  <title>BrainDump Settings</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: #e0e0e0;
+      padding: 40px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #00ff88;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 32px;
+    }
+
+    .section {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .setting-row:last-child {
+      border-bottom: none;
+    }
+
+    .setting-label {
+      flex: 1;
+    }
+
+    .setting-label h3 {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .setting-label p {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 28px;
+      background: #444;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle-switch.active {
+      background: #00ff88;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+
+    .toggle-switch.active::after {
+      transform: translateX(20px);
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    .radio-option {
+      flex: 1;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .radio-option:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .radio-option.selected {
+      background: rgba(0, 255, 136, 0.1);
+      border-color: #00ff88;
+    }
+
+    .permission-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .status-icon {
+      font-size: 24px;
+    }
+
+    .status-text h3 {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .status-text p {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .permission-status.granted {
+      border-left: 4px solid #00ff88;
+    }
+
+    .permission-status.denied {
+      border-left: 4px solid #ff4444;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #00ff88;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: #00dd77;
+      transform: translateY(-1px);
+    }
+
+    button.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    button.secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .blacklist {
+      margin-top: 16px;
+    }
+
+    .blacklist-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .blacklist-item span {
+      font-size: 13px;
+      font-family: monospace;
+      color: #aaa;
+    }
+
+    .remove-btn {
+      padding: 4px 12px;
+      font-size: 12px;
+      background: rgba(255, 68, 68, 0.2);
+      color: #ff4444;
+    }
+
+    .remove-btn:hover {
+      background: rgba(255, 68, 68, 0.3);
+    }
+
+    .add-blacklist {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 13px;
+    }
+
+    input[type="text"]::placeholder {
+      color: #666;
+    }
+
+    .test-section {
+      text-align: center;
+      padding-top: 16px;
+    }
+
+    .test-btn {
+      background: rgba(0, 136, 255, 0.2);
+      color: #0088ff;
+      border: 1px solid #0088ff;
+    }
+
+    .test-btn:hover {
+      background: rgba(0, 136, 255, 0.3);
+    }
+
+    .back-btn {
+      margin-top: 24px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Auto-Fill Settings</h1>
+    <p class="subtitle">Configure automatic transcript insertion</p>
+
+    <!-- Permission Status -->
+    <div id="permission-section" class="section">
+      <div class="section-title">Accessibility Permission</div>
+      <div id="permission-status" class="permission-status denied">
+        <span class="status-icon">⚠️</span>
+        <div class="status-text">
+          <h3>Permission Required</h3>
+          <p>Grant accessibility permission to enable auto-fill</p>
+        </div>
+      </div>
+      <button id="request-permission-btn" class="secondary">Open System Preferences</button>
+    </div>
+
+    <!-- Auto-Fill Toggle -->
+    <div class="section">
+      <div class="section-title">Auto-Fill</div>
+      <div class="setting-row">
+        <div class="setting-label">
+          <h3>Enable Auto-Fill</h3>
+          <p>Automatically fill text fields with last transcript</p>
+        </div>
+        <div id="enable-toggle" class="toggle-switch"></div>
+      </div>
+    </div>
+
+    <!-- Trigger Mode -->
+    <div class="section">
+      <div class="section-title">Trigger Mode</div>
+      <div class="radio-group">
+        <div class="radio-option" data-mode="auto">
+          <h3>Automatic</h3>
+          <p style="font-size: 12px; color: #888; margin-top: 4px;">Fill on text field focus</p>
+        </div>
+        <div class="radio-option" data-mode="manual">
+          <h3>Manual (Ctrl+Shift+V)</h3>
+          <p style="font-size: 12px; color: #888; margin-top: 4px;">Fill only when shortcut pressed</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blacklist -->
+    <div class="section">
+      <div class="section-title">App Blacklist</div>
+      <p style="font-size: 13px; color: #888; margin-bottom: 16px;">
+        Prevent auto-fill in these applications (e.g., password managers)
+      </p>
+      <div id="blacklist-container" class="blacklist">
+        <!-- Populated dynamically -->
+      </div>
+      <div class="add-blacklist">
+        <input type="text" id="new-blacklist-app" placeholder="com.example.app">
+        <button id="add-blacklist-btn" class="secondary">Add</button>
+      </div>
+    </div>
+
+    <!-- Test Mode -->
+    <div class="section">
+      <div class="section-title">Test Auto-Fill</div>
+      <p style="font-size: 13px; color: #888; margin-bottom: 16px;">
+        Click a text field (e.g., in Chrome) and test if auto-fill works
+      </p>
+      <div class="test-section">
+        <button id="test-autofill-btn" class="test-btn">Test Auto-Fill Now</button>
+      </div>
+    </div>
+
+    <!-- Back Button -->
+    <button id="back-btn" class="back-btn secondary">Back to Recorder</button>
+  </div>
+
+  <script src="settings-renderer.js"></script>
+</body>
+</html>

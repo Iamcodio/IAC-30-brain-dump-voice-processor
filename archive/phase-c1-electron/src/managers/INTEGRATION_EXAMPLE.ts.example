@@ -1,0 +1,264 @@
+/**
+ * AutoFillManager Integration Example
+ *
+ * Demonstrates how to integrate the AutoFillManager into the BrainDump application.
+ * This shows typical usage patterns for starting, configuring, and using auto-fill.
+ */
+
+import { AutoFillManager } from './autofill_manager';
+import database = require('../database');
+
+/**
+ * Example 1: Basic initialization and startup
+ */
+async function example1_BasicUsage() {
+  console.log('=== Example 1: Basic Usage ===\n');
+
+  // Create manager instance
+  const autoFillManager = new AutoFillManager(database);
+
+  try {
+    // Start auto-fill (requires accessibility permissions)
+    await autoFillManager.start();
+    console.log('✓ Auto-fill manager started successfully');
+    console.log(`✓ Manager is active: ${autoFillManager.isActive()}`);
+  } catch (error) {
+    console.error('✗ Failed to start auto-fill manager:', error.message);
+    console.error('  → User must grant permissions in:');
+    console.error('     System Preferences > Privacy & Security > Accessibility');
+    return;
+  }
+
+  // Simulate running for a while
+  console.log('\n✓ Auto-fill is now monitoring for text field focus events...');
+  console.log('  → Press Ctrl+Y to record');
+  console.log('  → Focus a text field to trigger auto-fill');
+
+  // Stop after some time
+  setTimeout(async () => {
+    await autoFillManager.stop();
+    console.log('\n✓ Auto-fill manager stopped cleanly');
+  }, 5000);
+}
+
+/**
+ * Example 2: Updating settings
+ */
+async function example2_SettingsManagement() {
+  console.log('=== Example 2: Settings Management ===\n');
+
+  const autoFillManager = new AutoFillManager(database);
+
+  // Check initial state
+  console.log('Initial state:', {
+    isActive: autoFillManager.isActive()
+  });
+
+  // Update blacklist
+  console.log('\n✓ Adding app to blacklist...');
+  autoFillManager.updateSettings({
+    blacklistedApps: [
+      'com.apple.keychainaccess',
+      'com.1password.1password',
+      'com.agilebits.onepassword7',
+      'com.newapp.secure' // Add new app
+    ]
+  });
+
+  // Disable auto-fill temporarily
+  console.log('✓ Disabling auto-fill...');
+  autoFillManager.updateSettings({
+    enabled: false
+  });
+
+  // Re-enable with manual trigger only
+  console.log('✓ Re-enabling with manual trigger...');
+  autoFillManager.updateSettings({
+    enabled: true,
+    requireManualTrigger: true // Only fill on Ctrl+Shift+V
+  });
+
+  // Increase debounce time
+  console.log('✓ Increasing debounce time...');
+  autoFillManager.updateSettings({
+    debounceMs: 1000 // 1 second between fills
+  });
+}
+
+/**
+ * Example 3: Manual fill trigger (Ctrl+Shift+V)
+ */
+async function example3_ManualFill() {
+  console.log('=== Example 3: Manual Fill ===\n');
+
+  const autoFillManager = new AutoFillManager(database);
+
+  try {
+    await autoFillManager.start();
+    console.log('✓ Auto-fill manager started');
+
+    // Configure for manual-only mode
+    autoFillManager.updateSettings({
+      requireManualTrigger: true
+    });
+
+    console.log('✓ Configured for manual-only mode');
+    console.log('  → Auto-fill will NOT trigger on focus');
+    console.log('  → Use performManualFill() or Ctrl+Shift+V to fill');
+
+    // Simulate manual fill trigger
+    console.log('\n✓ Triggering manual fill...');
+    const success = await autoFillManager.performManualFill();
+
+    if (success) {
+      console.log('✓ Manual fill completed successfully');
+    } else {
+      console.log('✗ Manual fill failed (no transcript or no focused field)');
+    }
+
+    await autoFillManager.stop();
+  } catch (error) {
+    console.error('✗ Error:', error.message);
+  }
+}
+
+/**
+ * Example 4: Integration with global shortcuts
+ */
+async function example4_GlobalShortcutIntegration() {
+  console.log('=== Example 4: Global Shortcut Integration ===\n');
+
+  const autoFillManager = new AutoFillManager(database);
+
+  try {
+    await autoFillManager.start();
+    console.log('✓ Auto-fill manager started');
+
+    // Simulate global shortcut registration (Electron)
+    // In real app, this would be in main.js:
+    /*
+    const { globalShortcut } = require('electron');
+
+    globalShortcut.register('Control+Shift+V', async () => {
+      const success = await autoFillManager.performManualFill();
+      if (success) {
+        // Show notification or toast
+        console.log('Auto-filled with last transcript');
+      }
+    });
+    */
+
+    console.log('✓ Global shortcut registered: Ctrl+Shift+V');
+    console.log('  → Triggers performManualFill()');
+
+    await autoFillManager.stop();
+  } catch (error) {
+    console.error('✗ Error:', error.message);
+  }
+}
+
+/**
+ * Example 5: Error handling
+ */
+async function example5_ErrorHandling() {
+  console.log('=== Example 5: Error Handling ===\n');
+
+  const autoFillManager = new AutoFillManager(database);
+
+  // Try to start without permissions
+  try {
+    await autoFillManager.start();
+    console.log('✓ Started successfully');
+  } catch (error) {
+    console.log('✗ Expected error caught:', error.message);
+    console.log('  → This is normal if permissions not granted');
+  }
+
+  // Safe to call stop even if not started
+  await autoFillManager.stop();
+  console.log('✓ Stop called safely (even when not started)');
+
+  // Safe to call start multiple times
+  try {
+    await autoFillManager.start();
+    await autoFillManager.start(); // Will log warning and ignore
+    await autoFillManager.stop();
+    console.log('✓ Duplicate start calls handled gracefully');
+  } catch (error) {
+    console.log('Expected behavior on permission error');
+  }
+}
+
+/**
+ * Example 6: Complete application lifecycle
+ */
+async function example6_ApplicationLifecycle() {
+  console.log('=== Example 6: Application Lifecycle ===\n');
+
+  const autoFillManager = new AutoFillManager(database);
+
+  // App startup
+  console.log('1. Application starting...');
+  try {
+    await autoFillManager.start();
+    console.log('   ✓ Auto-fill ready');
+  } catch (error) {
+    console.log('   ✗ Auto-fill unavailable (permissions required)');
+    // App continues without auto-fill
+  }
+
+  // App running
+  console.log('\n2. Application running...');
+  console.log('   ✓ Auto-fill monitoring in background');
+  console.log('   ✓ User records voice notes');
+  console.log('   ✓ Auto-fill triggers when focusing text fields');
+
+  // User changes settings
+  console.log('\n3. User updates settings...');
+  autoFillManager.updateSettings({
+    requireManualTrigger: true,
+    blacklistedApps: ['com.slack.Slack'] // Don't auto-fill in Slack
+  });
+  console.log('   ✓ Settings updated');
+
+  // App shutdown
+  console.log('\n4. Application shutting down...');
+  await autoFillManager.stop();
+  console.log('   ✓ Auto-fill stopped cleanly');
+  console.log('   ✓ Resources released');
+}
+
+/**
+ * Run examples
+ */
+async function runExamples() {
+  console.log('\n╔════════════════════════════════════════════════════╗');
+  console.log('║  AutoFillManager Integration Examples             ║');
+  console.log('╚════════════════════════════════════════════════════╝\n');
+
+  // Uncomment the example you want to run:
+
+  // await example1_BasicUsage();
+  // await example2_SettingsManagement();
+  // await example3_ManualFill();
+  // await example4_GlobalShortcutIntegration();
+  // await example5_ErrorHandling();
+  await example6_ApplicationLifecycle();
+
+  console.log('\n✓ Examples completed');
+}
+
+// Export for use in other modules
+export {
+  example1_BasicUsage,
+  example2_SettingsManagement,
+  example3_ManualFill,
+  example4_GlobalShortcutIntegration,
+  example5_ErrorHandling,
+  example6_ApplicationLifecycle
+};
+
+// Run if executed directly
+if (require.main === module) {
+  runExamples().catch(console.error);
+}

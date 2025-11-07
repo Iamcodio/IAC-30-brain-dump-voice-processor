@@ -1,0 +1,118 @@
+
+> braindump-voice-processor@2.5.0-beta1 start
+> npm run build && electron dist/main.js
+
+
+> braindump-voice-processor@2.5.0-beta1 prebuild
+> rm -rf dist
+
+
+> braindump-voice-processor@2.5.0-beta1 build
+> tsc
+
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: Application starting {"version":"2.1.0","nodeVersion":"v18.18.2","electronVersion":"28.3.3","platform":"darwin","arch":"arm64"}
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: Sentry disabled (local development mode)
+[2025-10-26T12:38:53.829Z] INFO:Application.initialize:ProcessStarting:Configuration loaded successfully (environment: development)
+INFO:Application.initialize:ProcessStarting:Configuration loaded successfully (environment: development)
+[2025-10-26T12:38:53.829Z] INFO:Application.initialize:DatabaseCreated:Database initialized
+INFO:Application.initialize:DatabaseCreated:Database initialized
+2025-10-26 12:38:53 [[33mwarn[39m] [braindump]: Tray icon empty or not found: /Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/dist/assets/tray/tray-idle.png {"state":"idle"}
+2025-10-26 12:38:53 [[33mwarn[39m] [braindump]: Tray icon empty or not found: /Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/dist/assets/tray/tray-recording.png {"state":"recording"}
+2025-10-26 12:38:53 [[33mwarn[39m] [braindump]: Tray icon empty or not found: /Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/dist/assets/tray/tray-processing.png {"state":"processing"}
+2025-10-26 12:38:53 [[33mwarn[39m] [braindump]: Tray icon empty or not found: /Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/dist/assets/tray/tray-error.png {"state":"error"}
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: TrayManager initialized {"iconsLoaded":4}
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: Tray icon created successfully {"state":"idle","tooltip":"BrainDump - Ready to record"}
+[2025-10-26T12:38:53.961Z] INFO:Application.initialize:ProcessStarting:TrayManager initialized
+INFO:Application.initialize:ProcessStarting:TrayManager initialized
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: Recorder events wired to TrayManager
+[2025-10-26T12:38:53.962Z] INFO:ProcessManager.start.recorder:ProcessStarting:Starting recorder process
+INFO:ProcessManager.start.recorder:ProcessStarting:Starting recorder process
+[2025-10-26T12:38:53.964Z] INFO:ProcessManager.start:ProcessStarting:Shortcut registered: Control+Y
+INFO:ProcessManager.start:ProcessStarting:Shortcut registered: Control+Y
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: Native accessibility module loaded successfully {"modulePath":"/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/build/Release/accessibility.node","functions":["hasAccessibilityPermissions","requestAccessibilityPermissions","getFocusedElement","isTextInputElement","insertText","startMonitoringActiveApp","stopMonitoringActiveApp"]}
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: Native accessibility module loaded successfully {"modulePath":"/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/build/Release/accessibility.node","functions":["hasAccessibilityPermissions","requestAccessibilityPermissions","getFocusedElement","isTextInputElement","insertText","startMonitoringActiveApp","stopMonitoringActiveApp"]}
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: AutoFillManager initialized {"enabled":true,"requireManualTrigger":true,"debounceMs":500,"blacklistedAppsCount":3}
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: Accessibility permissions already granted
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: Accessibility permissions already granted
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: Started monitoring for text field focus events {"startTime":"2025-10-26T12:38:53.980Z"}
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: AutoFillManager started successfully {"enabled":true,"autoMode":false}
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: AutoFillManager started successfully
+2025-10-26 12:38:53 [[32minfo[39m] [braindump]: Metrics collection disabled
+[2025-10-26T12:38:53.980Z] INFO:Application.initialize:ProcessStarting:Application initialized successfully
+INFO:Application.initialize:ProcessStarting:Application initialized successfully
+[2025-10-26T12:38:54.153Z] INFO:recorder.stdout:RecorderReady:Recorder process ready
+INFO:recorder.stdout:RecorderReady:Recorder process ready
+
+[STEP 1] [2025-10-26T12:39:59.680Z] ShortcutManager.handleRecordingToggle() CALLED
+[STEP 1] Current isRecording state: false
+[STEP 2] [2025-10-26T12:39:59.682Z] BRANCH: Starting recording (isRecording=false)
+[STEP 3] [2025-10-26T12:39:59.682Z] Calling overlayManager.createOverlay()
+🔵 createOverlay() called
+🔵 Creating new overlay window...
+🔵 Screen dimensions: 1470x919
+✅ BrowserWindow created successfully
+🔵 Overlay ID: 2
+✅ Window level settings applied
+✅ Overlay window shown
+🔵 Loading overlay HTML from: /Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/src/renderer/overlay.html
+✅ Overlay creation complete
+[STEP 4] [2025-10-26T12:39:59.732Z] Calling overlayManager.showOverlay()
+Overlay window shown and focused
+[STEP 5] [2025-10-26T12:39:59.733Z] Calling overlayManager.setState('recording')
+Overlay state changed to: recording
+[STEP 6] [2025-10-26T12:39:59.734Z] Calling recorderManager.startRecording()
+
+[RECORDER] [2025-10-26T12:39:59.734Z] startRecording() CALLED
+[RECORDER] Current isRecording: false
+[RECORDER] processManager exists: true
+[RECORDER] processManager.isRunning: true
+[RECORDER] [2025-10-26T12:39:59.734Z] Setting isRecording = true
+[RECORDER] isRecording is now: true
+[RECORDER] [2025-10-26T12:39:59.736Z] Sending command to Python: "start
+"
+[RECORDER] processManager.send() returned: true
+[RECORDER] [2025-10-26T12:39:59.736Z] startRecording() COMPLETE - returning true
+
+[STEP 7] [2025-10-26T12:39:59.736Z] startRecording() returned: true
+[STEP 8] [2025-10-26T12:39:59.736Z] After startRecording, isRecording=true
+[STEP END] [2025-10-26T12:39:59.736Z] ShortcutManager.handleRecordingToggle() COMPLETE
+
+✅ Overlay HTML loaded successfully
+
+[STEP 1] [2025-10-26T12:40:08.071Z] ShortcutManager.handleRecordingToggle() CALLED
+[STEP 1] Current isRecording state: true
+[STEP 2] [2025-10-26T12:40:08.071Z] BRANCH: Stopping recording (isRecording=true)
+[STEP 3] [2025-10-26T12:40:08.071Z] Calling recorderManager.stopRecording()
+
+[RECORDER] [2025-10-26T12:40:08.071Z] stopRecording() CALLED
+[RECORDER] Current isRecording: true
+[RECORDER] processManager exists: true
+[RECORDER] processManager.isRunning: true
+[RECORDER] [2025-10-26T12:40:08.072Z] Setting isRecording = false
+[RECORDER] isRecording is now: false
+[RECORDER] [2025-10-26T12:40:08.072Z] Sending command to Python: "stop
+"
+[RECORDER] processManager.send() returned: true
+[RECORDER] [2025-10-26T12:40:08.072Z] stopRecording() COMPLETE - returning true
+
+[STEP 4] [2025-10-26T12:40:08.072Z] stopRecording() returned: true
+[STEP 5] [2025-10-26T12:40:08.072Z] After stopRecording, isRecording=false
+[STEP END] [2025-10-26T12:40:08.072Z] ShortcutManager.handleRecordingToggle() COMPLETE
+
+2025-10-26 12:40:08 [[32minfo[39m] [braindump]: Recording saved {"filename":"/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_12-40-08.wav"}
+2025-10-26 12:40:08 [[32minfo[39m] [braindump]: Starting transcription {"audioPath":"/Users/kjd/01-projects/IAC-30-brain-dump-voice-processor/outputs/audio/recording_2025-10-26_12-40-08.wav"}
+2025-10-26 12:40:08 [[31merror[39m] [braindump]: Transcription stderr {"stderr":"[2025-10-26 12:40:08] INFO:save_to_database:DatabaseUpdated:Database updated: rec_1761482408742\nINFO:save_to_database:DatabaseUpdated:Database updated: rec_1761482408742"}
+[TRACE] transcriber stdout got: TRANSCRIPT_SAVED:outputs/transcripts/transcript_2025-10-26_124008.md
+TRANSCRIPT_TXT:outputs/transcripts/transcript_2025-10-26_124008.txt
+[TRACE] captured MD path: outputs/transcripts/transcript_2025-10-26_124008.md
+[2025-10-26T12:40:08.858Z] INFO:transcribeAudio:TranscriptSaved:Transcript saved: outputs/transcripts/transcript_2025-10-26_124008.md
+INFO:transcribeAudio:TranscriptSaved:Transcript saved: outputs/transcripts/transcript_2025-10-26_124008.md
+[TRACE] captured TXT path: outputs/transcripts/transcript_2025-10-26_124008.txt
+[TRACE] transcriber closed with code: 0
+[2025-10-26T12:40:08.866Z] INFO:transcribeAudio:TranscriptionComplete:Transcription completed successfully
+INFO:transcribeAudio:TranscriptionComplete:Transcription completed successfully
+[TRACE] checking txtPath: outputs/transcripts/transcript_2025-10-26_124008.txt exists: true
+[TRACE] read transcript text length: 69 preview: Hello, hello, hello This is the last test and I'm 
+[TRACE] sending transcription-complete with text length: 69
+[TRACE] sending auto-fill-transcript with text length: 69
+sh: line 1: 23761 Killed: 9               electron dist/main.js

@@ -1,47 +1,41 @@
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Python
-.venv/
-__pycache__/
-*.py[cod]
-*$py.class
+# Build artifacts
+build/
+dist/
+*.o
+*.a
 *.so
-.Python
+*.dylib
+*.dll
 
-# Node
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
 
-# Personal Data (DO NOT COMMIT)
-outputs/
-config
-*.wav
-*.mp3
-
-# Archives
-archive/
-
-# Documentation (reference only)
-docs/
-
-# Models (too large for GitHub)
+# Models (large files, downloaded separately)
 models/*.bin
-models/*.ggml
 
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
-*.swo
+*~
 
-# Logs
-*.log
-logs/
-config/runtime.json
-dist/
-*.tsbuildinfo
+# macOS
+.DS_Store
+
+# Python (if any helper scripts)
+__pycache__/
+*.pyc
+.venv/
+
+# Test outputs
+test_output/
+*.wav
+transcript*.md
+
+# Secrets
+.env
+*.pem
+*.key

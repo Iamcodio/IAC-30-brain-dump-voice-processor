@@ -1,0 +1,13 @@
+{
+  "paths": {
+    "audioDir": "test/outputs/audio",
+    "transcriptDir": "test/outputs/transcripts",
+    "databaseFile": "test/db/recordings.json"
+  },
+  "logging": {
+    "level": "silent"
+  },
+  "metrics": {
+    "enabled": false
+  }
+}

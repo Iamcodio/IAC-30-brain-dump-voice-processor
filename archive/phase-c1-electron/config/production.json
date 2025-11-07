@@ -1,0 +1,14 @@
+{
+  "paths": {
+    "audioDir": "/var/app/braindump/audio",
+    "transcriptDir": "/var/app/braindump/transcripts",
+    "databaseFile": "/var/app/braindump/db/recordings.json"
+  },
+  "logging": {
+    "level": "warn"
+  },
+  "sentry": {
+    "enabled": true,
+    "dsn": "https://placeholder@sentry.io/project"
+  }
+}

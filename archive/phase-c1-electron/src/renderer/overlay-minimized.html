@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline';">
+    <title>BrainDump - Minimized</title>
+    <link rel="stylesheet" href="overlay-minimized.css">
+</head>
+<body>
+    <div id="minimized-container" class="minimized-overlay">
+        <!-- Triangle icon -->
+        <div class="triangle-icon">▲</div>
+
+        <!-- Compact waveform visualization -->
+        <canvas id="waveform-canvas" width="140" height="40"></canvas>
+
+        <!-- Hidden time display (shown on hover) -->
+        <div id="time-display" class="time-display">00:00</div>
+    </div>
+
+    <script>
+        // Waveform visualization
+        const canvas = document.getElementById('waveform-canvas');
+        const ctx = canvas.getContext('2d');
+        const timeDisplay = document.getElementById('time-display');
+        const container = document.getElementById('minimized-container');
+
+        let isRecording = false;
+        let recordingStartTime = null;
+        let animationFrameId = null;
+        let audioData = new Array(70).fill(0); // Compact waveform with fewer bars
+
+        // Pulsing animation for triangle during recording
+        let pulsePhase = 0;
+
+        // Click to expand overlay
+        container.addEventListener('click', () => {
+            window.electronAPI.expandOverlay();
+        });
+
+        // Update time display
+        function updateTimeDisplay() {
+            if (!isRecording || !recordingStartTime) return;
+
+            const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            timeDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // Simulate audio input (in production, this would come from IPC)
+        function simulateAudioData() {
+            // Shift array left and add new random value
+            audioData.shift();
+            audioData.push(Math.random() * 0.8 + 0.2);
+        }
+
+        // Draw compact waveform
+        function drawWaveform() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const barWidth = 2;
+            const barGap = 0;
+            const totalBars = audioData.length;
+            const centerY = canvas.height / 2;
+
+            audioData.forEach((value, index) => {
+                const x = index * (barWidth + barGap);
+                const barHeight = value * (canvas.height * 0.4); // Max 40% of canvas height
+
+                // Gradient from transparent to white
+                const opacity = isRecording ? 0.3 + (value * 0.5) : 0.15;
+                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+
+                // Draw centered bar
+                ctx.fillRect(
+                    x,
+                    centerY - barHeight / 2,
+                    barWidth,
+                    barHeight
+                );
+            });
+        }
+
+        // Pulse animation for triangle
+        function updateTriangleGlow() {
+            if (!isRecording) return;
+
+            pulsePhase += 0.05;
+            const glowIntensity = (Math.sin(pulsePhase) + 1) / 2; // 0 to 1
+            const triangleIcon = document.querySelector('.triangle-icon');
+
+            // Subtle glow effect
+            const blur = 4 + (glowIntensity * 4);
+            const opacity = 0.6 + (glowIntensity * 0.4);
+            triangleIcon.style.filter = `drop-shadow(0 0 ${blur}px rgba(255, 255, 255, ${opacity}))`;
+        }
+
+        // Animation loop
+        function animate() {
+            if (isRecording) {
+                simulateAudioData();
+                updateTimeDisplay();
+                updateTriangleGlow();
+            }
+
+            drawWaveform();
+            animationFrameId = requestAnimationFrame(animate);
+        }
+
+        // IPC listeners
+        window.electronAPI.onRecordingStateChange((state) => {
+            isRecording = state.isRecording;
+
+            if (isRecording) {
+                recordingStartTime = Date.now();
+                audioData = new Array(70).fill(0);
+                pulsePhase = 0;
+            } else {
+                recordingStartTime = null;
+                // Fade out animation
+                audioData = audioData.map(v => v * 0.5);
+            }
+        });
+
+        window.electronAPI.onAudioData((data) => {
+            if (isRecording && data.samples) {
+                // Process actual audio samples for waveform
+                // For now, use RMS or peak detection
+                const avgAmplitude = data.samples.reduce((sum, val) => sum + Math.abs(val), 0) / data.samples.length;
+                audioData.shift();
+                audioData.push(avgAmplitude);
+            }
+        });
+
+        // Initialize
+        drawWaveform();
+        animate();
+
+        // Show time on hover
+        container.addEventListener('mouseenter', () => {
+            if (isRecording) {
+                timeDisplay.classList.add('visible');
+            }
+        });
+
+        container.addEventListener('mouseleave', () => {
+            timeDisplay.classList.remove('visible');
+        });
+    </script>
+</body>
+</html>

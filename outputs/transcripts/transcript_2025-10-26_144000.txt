@@ -1,0 +1,1 @@
+Okay, yeah, so I'm just clicking in the text field now into your text field and then So by rights the refresh command the refresh action auto refresh Once I stopped doing it should trigger and look for where the focus is the last focus and then paste the thing so let me try it now and

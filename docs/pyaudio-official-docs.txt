@@ -1,0 +1,389 @@
+PyAudio Documentation - Version 0.2.14
+Source: https://people.csail.mit.edu/hubert/pyaudio/docs/
+Downloaded: 2025-10-24
+
+========================================
+INTRODUCTION
+========================================
+
+PyAudio provides Python bindings for PortAudio, the cross-platform audio I/O library. 
+With PyAudio, you can easily use Python to play and record audio on a variety of platforms.
+
+========================================
+EXAMPLE: BLOCKING MODE AUDIO I/O
+========================================
+
+"""PyAudio Example: Play a wave file."""
+import wave
+import sys
+import pyaudio
+
+CHUNK = 1024
+
+if len(sys.argv) < 2:
+    print(f'Plays a wave file. Usage: {sys.argv[0]} filename.wav')
+    sys.exit(-1)
+
+with wave.open(sys.argv[1], 'rb') as wf:
+    # Instantiate PyAudio and initialize PortAudio system resources (1)
+    p = pyaudio.PyAudio()
+    
+    # Open stream (2)
+    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                    channels=wf.getnchannels(),
+                    rate=wf.getframerate(),
+                    output=True)
+    
+    # Play samples from the wave file (3)
+    while len(data := wf.readframes(CHUNK)):  # Requires Python 3.8+ for :=
+        stream.write(data)
+    
+    # Close stream (4)
+    stream.close()
+    
+    # Release PortAudio system resources (5)
+    p.terminate()
+
+To use PyAudio:
+1. Instantiate PyAudio using pyaudio.PyAudio() - acquires system resources for PortAudio
+2. Open stream on desired device with desired audio parameters using pyaudio.PyAudio.open()
+3. Play audio by writing data to stream using pyaudio.PyAudio.Stream.write(), 
+   or read audio data from stream using pyaudio.PyAudio.Stream.read()
+4. Close stream using pyaudio.PyAudio.Stream.close()
+5. Terminate PortAudio session using pyaudio.PyAudio.terminate()
+
+Note: In "blocking mode", each write() or read() blocks until all frames have been 
+played/recorded. Alternative approach is "callback mode" (see below).
+
+========================================
+EXAMPLE: CALLBACK MODE AUDIO I/O
+========================================
+
+"""PyAudio Example: Play a wave file (callback version)."""
+import wave
+import time
+import sys
+import pyaudio
+
+if len(sys.argv) < 2:
+    print(f'Plays a wave file. Usage: {sys.argv[0]} filename.wav')
+    sys.exit(-1)
+
+with wave.open(sys.argv[1], 'rb') as wf:
+    # Define callback for playback (1)
+    def callback(in_data, frame_count, time_info, status):
+        data = wf.readframes(frame_count)
+        return (data, pyaudio.paContinue)
+    
+    # Instantiate PyAudio and initialize PortAudio system resources (2)
+    p = pyaudio.PyAudio()
+    
+    # Open stream using callback (3)
+    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                    channels=wf.getnchannels(),
+                    rate=wf.getframerate(),
+                    output=True,
+                    stream_callback=callback)
+    
+    # Wait for stream to finish (4)
+    while stream.is_active():
+        time.sleep(0.1)
+    
+    # Close the stream (5)
+    stream.close()
+    
+    # Release PortAudio system resources (6)
+    p.terminate()
+
+In callback mode:
+- PyAudio calls user-defined callback function whenever it needs new audio data 
+  or when new recorded audio data becomes available
+- Callback runs in separate thread
+- Callback signature: callback(<input_data>, <frame_count>, <time_info>, <status_flag>)
+- Must return tuple: (out_data, flag)
+- flag = paContinue, paComplete, or paAbort
+
+========================================
+KEY CLASSES
+========================================
+
+1. pyaudio.PyAudio
+   - Python interface to PortAudio
+   - Methods to initialize/terminate PortAudio
+   - Open/close streams
+   - Query audio devices and Host APIs
+
+2. pyaudio.PyAudio.Stream
+   - PortAudio Stream Wrapper
+   - Use PyAudio.open() to instantiate
+   - Can be input, output, or both
+   
+3. pyaudio.PaMacCoreStreamInfo (macOS only)
+   - macOS-specific stream settings
+   - Pass to input_host_api_specific_stream_info or output_host_api_specific_stream_info
+
+========================================
+PORTAUDIO SAMPLE FORMATS
+========================================
+
+pyaudio.paFloat32 = 1       # 32 bit float
+pyaudio.paInt32 = 2         # 32 bit int  
+pyaudio.paInt24 = 4         # 24 bit int
+pyaudio.paInt16 = 8         # 16 bit int (most common)
+pyaudio.paInt8 = 16         # 8 bit int
+pyaudio.paUInt8 = 32        # 8 bit unsigned int
+pyaudio.paCustomFormat = 65536  # custom data format
+
+========================================
+PORTAUDIO HOST APIS
+========================================
+
+pyaudio.paInDevelopment = 0
+pyaudio.paDirectSound = 1       # Windows only
+pyaudio.paMME = 2               # Windows only  
+pyaudio.paASIO = 3              # Steinberg Audio
+pyaudio.paSoundManager = 4      # OSX only
+pyaudio.paCoreAudio = 5         # OSX only (we'll use this)
+pyaudio.paOSS = 7               # Linux only
+pyaudio.paALSA = 8              # Linux only
+pyaudio.paAL = 9                # Open Audio Library
+pyaudio.paBeOS = 10
+pyaudio.paWDMKS = 11            # Windows only
+pyaudio.paJACK = 12
+pyaudio.paWASAPI = 13           # Windows Vista+
+pyaudio.paNoDevice = -1
+
+========================================
+PORTAUDIO CALLBACK RETURN CODES
+========================================
+
+pyaudio.paContinue = 0      # More audio data to come
+pyaudio.paComplete = 1      # Last block of audio data
+pyaudio.paAbort = 2         # Error occurred, stop playback/recording
+
+========================================
+PORTAUDIO CALLBACK FLAGS
+========================================
+
+pyaudio.paInputUnderflow = 1
+pyaudio.paInputOverflow = 2
+pyaudio.paOutputUnderflow = 4
+pyaudio.paOutputOverflow = 8
+pyaudio.paPrimingOutput = 16
+
+========================================
+CLASS PyAudio - MAIN METHODS
+========================================
+
+__init__()
+    Initialize PortAudio
+
+terminate()
+    Terminate PortAudio. MUST call for every instance to release resources.
+
+open(*args, **kwargs)
+    Opens a new stream. Returns PyAudio.Stream object.
+    See Stream.__init__() for parameters.
+
+get_device_count()
+    Returns number of audio devices available
+
+get_default_input_device_info()
+    Returns default input device parameters as dictionary
+    Raises IOError if no default input device
+
+get_default_output_device_info()
+    Returns default output device parameters as dictionary
+    Raises IOError if no default output device
+
+get_device_info_by_index(device_index)
+    Returns device parameters for specified device as dictionary
+    
+get_host_api_count()
+    Returns number of available PortAudio Host APIs
+
+is_format_supported(rate, input_device, input_channels, input_format, 
+                   output_device, output_channels, output_format)
+    Checks if specified device configuration is supported
+    Returns True if supported, raises ValueError otherwise
+
+========================================
+CLASS PyAudio.Stream - MAIN METHODS
+========================================
+
+__init__(PA_manager, rate, channels, format, 
+         input=False, output=False,
+         input_device_index=None, output_device_index=None,
+         frames_per_buffer=0, start=True,
+         input_host_api_specific_stream_info=None,
+         output_host_api_specific_stream_info=None,
+         stream_callback=None)
+    
+    Parameters:
+    - PA_manager: Reference to managing PyAudio instance
+    - rate: Sampling rate (Hz)
+    - channels: Number of channels
+    - format: Sample format (see PortAudio Sample Formats above)
+    - input: True for input stream
+    - output: True for output stream
+    - input_device_index: Input device to use (None = default)
+    - output_device_index: Output device to use (None = default)
+    - frames_per_buffer: Frames per buffer
+    - start: Start immediately (default True)
+    - stream_callback: Callback function for non-blocking mode
+
+start_stream()
+    Starts the stream
+
+stop_stream()
+    Stops the stream
+
+close()
+    Closes the stream
+
+read(num_frames, exception_on_overflow=True)
+    Read samples from stream (blocking mode only)
+    Returns: bytes
+    
+write(frames, num_frames=None, exception_on_underflow=False)
+    Write samples to stream for playback (blocking mode only)
+    
+is_active()
+    Returns whether stream is active (bool)
+
+is_stopped()
+    Returns whether stream is stopped (bool)
+
+get_time()
+    Returns stream time (float)
+
+get_cpu_load()
+    Returns CPU load (float). Always 0.0 when using blocking API.
+
+get_input_latency()
+    Returns input latency (float)
+
+get_output_latency()
+    Returns output latency (float)
+
+get_read_available()
+    Returns number of frames that can be read without waiting (int)
+
+get_write_available()
+    Returns number of frames that can be written without waiting (int)
+
+========================================
+RECORDING AUDIO - TYPICAL PATTERN
+========================================
+
+import pyaudio
+import wave
+
+# Audio parameters
+CHUNK = 1024                # Frames per buffer
+FORMAT = pyaudio.paInt16    # 16-bit int
+CHANNELS = 1                # Mono
+RATE = 44100                # Sample rate (Hz)
+RECORD_SECONDS = 5          # Duration
+
+# Initialize PyAudio
+p = pyaudio.PyAudio()
+
+# Open stream for recording
+stream = p.open(format=FORMAT,
+                channels=CHANNELS,
+                rate=RATE,
+                input=True,
+                frames_per_buffer=CHUNK)
+
+print("Recording...")
+frames = []
+
+# Record audio in chunks
+for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+    data = stream.read(CHUNK)
+    frames.append(data)
+
+print("Recording finished")
+
+# Stop and close stream
+stream.stop_stream()
+stream.close()
+p.terminate()
+
+# Save to WAV file
+wf = wave.open('output.wav', 'wb')
+wf.setnchannels(CHANNELS)
+wf.setsampwidth(p.get_sample_size(FORMAT))
+wf.setframerate(RATE)
+wf.writeframes(b''.join(frames))
+wf.close()
+
+========================================
+IMPORTANT NOTES
+========================================
+
+1. ALWAYS call terminate() on PyAudio instance to release PortAudio resources
+
+2. In blocking mode:
+   - write() and read() block until all frames played/recorded
+   - Don't call read() or write() when using callback mode
+
+3. In callback mode:
+   - Callback runs in separate thread
+   - Exceptions in callback print traceback, queue exception, return paAbort
+   - Do NOT call read() or write() in callback mode
+   - Main thread must remain alive (e.g., sleep loop)
+
+4. For recording:
+   - Use input=True
+   - Specify input_device_index or use default
+   - Read frames using stream.read()
+
+5. For playback:
+   - Use output=True
+   - Specify output_device_index or use default
+   - Write frames using stream.write()
+
+6. Common sample rates: 8000, 16000, 22050, 44100, 48000 Hz
+   Most common: 44100 Hz (CD quality)
+
+7. Common formats:
+   - paInt16: Most compatible, good quality
+   - paFloat32: Higher precision, more processing power
+
+========================================
+ERROR HANDLING
+========================================
+
+Common errors:
+- IOError: Device not available, buffer issues
+- ValueError: Invalid parameters
+- Always wrap in try/except for production code
+
+Example:
+try:
+    stream = p.open(...)
+except IOError as e:
+    print(f"Could not open stream: {e}")
+    # Handle error
+
+========================================
+DEVICE ENUMERATION EXAMPLE
+========================================
+
+import pyaudio
+
+p = pyaudio.PyAudio()
+info = p.get_host_api_info_by_index(0)
+numdevices = info.get('deviceCount')
+
+for i in range(0, numdevices):
+    if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+        print(f"Input Device {i}: {p.get_device_info_by_host_api_device_index(0, i).get('name')}")
+
+p.terminate()
+
+========================================
+END OF DOCUMENTATION
+========================================
