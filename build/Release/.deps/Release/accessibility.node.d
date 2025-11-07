@@ -1,1 +1,0 @@
-cmd_Release/accessibility.node := c++ -bundle -undefined dynamic_lookup -Wl,-search_paths_first -mmacosx-version-min=12.0 -arch arm64 -L./Release -stdlib=libc++  -o Release/accessibility.node Release/obj.target/accessibility/native/accessibility/accessibility.o Release/nothing.a -framework AppKit -framework ApplicationServices -framework Carbon -framework CoreFoundation
